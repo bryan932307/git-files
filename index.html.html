@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Valle de Salazar</title>
+  <style>
+    :root{
+      color-scheme:light dark;
+      --ink:#172033;--muted:#536172;--paper:#f7f2df;--panel:#e8e0c5;--edge:#172033;
+      --red:#c72b3b;--red-dark:#7f1b29;--gold:#e4b846;--green:#679452;--night:#10243a;
+      --shadow:rgba(20,31,47,.28);--focus:#ffe074;
+    }
+    @media(prefers-color-scheme:dark){:root{
+      --ink:#f6f1df;--muted:#c2cbd4;--paper:#172333;--panel:#213044;--edge:#f6f1df;
+      --red:#f05261;--red-dark:#ff8b94;--gold:#f0cc67;--green:#42683f;--night:#091421;
+      --shadow:rgba(0,0,0,.55);--focus:#ffe074;
+    }}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#193047;color:var(--ink)}
+    body{font-family:"Courier New",ui-monospace,monospace;background-image:linear-gradient(90deg,rgba(255,255,255,.035) 50%,transparent 50%),linear-gradient(rgba(255,255,255,.025) 50%,transparent 50%);background-size:12px 12px;padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left))}
+    button{font:inherit;cursor:pointer}button:focus-visible,canvas:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+    .shell{max-width:none;margin:0 auto}.mast{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:0 0 6px;color:#fff}.mast h1{font-size:clamp(23px,5vw,40px);line-height:.92;margin:0;text-transform:uppercase;letter-spacing:-.075em;text-shadow:4px 4px 0 #7f1b29}.mast p{margin:0;text-align:right;font-size:12px;max-width:380px;color:#dce7ef;font-weight:bold}
+    .game-card{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 286px;min-height:650px;background:var(--panel);border:5px solid var(--edge);box-shadow:8px 8px 0 rgba(0,0,0,.3);overflow:hidden}
+    .stage{position:relative;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;background:#263b2e;padding:10px;overflow:hidden}
+    canvas{display:block;width:100%;height:auto;max-height:calc(100dvh - 28px);aspect-ratio:20/13;background:#8fb06b;border:4px solid #d9c77b;box-shadow:0 0 0 5px #172033;image-rendering:pixelated;image-rendering:crisp-edges}
+    .side{min-width:0;padding:18px 16px 15px;border-left:5px solid var(--edge);background:var(--panel);display:flex;flex-direction:column;gap:10px}
+    .hero-card{display:grid;grid-template-columns:54px minmax(0,1fr);gap:10px;align-items:center;padding-bottom:11px;border-bottom:3px dotted color-mix(in srgb,var(--edge) 55%,transparent)}
+    .portrait{position:relative;width:52px;height:52px;background:radial-gradient(circle at 50% 35%,#f9f7ef 0 12px,#c72b3b 13px 19px,#17385b 20px);border:3px solid var(--edge);overflow:hidden}.portrait:after{content:"";position:absolute;left:6px;right:6px;bottom:4px;height:15px;background:repeating-linear-gradient(90deg,#c72b3b 0 6px,#f8fafc 6px 12px);border:2px solid #172033}.hero-card strong{display:block;font-size:17px}.hero-card span{display:block;font-size:10px;color:var(--muted);line-height:1.35;margin-top:3px}
+    .label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--red-dark);font-weight:900}.quest{font-family:Georgia,"Times New Roman",serif;font-size:17px;line-height:1.3;margin:0;min-height:66px}.progress{display:flex;gap:5px}.chapter{height:9px;flex:1;border:2px solid var(--edge);background:transparent}.chapter.on{background:var(--gold)}
+    .gear{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;border:3px solid var(--edge);background:var(--paper);padding:9px}.gear b{font-size:12px}.gear span{font-size:11px;color:var(--muted)}.badge{background:var(--red);color:#fff;border:2px solid var(--edge);padding:4px 6px;font-weight:900;font-size:10px}
+    .log{min-height:100px;margin-top:auto;background:var(--paper);border:3px solid var(--edge);padding:9px;font-size:11px;line-height:1.45;box-shadow:4px 4px 0 color-mix(in srgb,var(--edge) 28%,transparent)}.log p{margin:0 0 4px}.log .old{opacity:.64}
+    .actions{display:grid;grid-template-columns:1.35fr 1fr 1fr;gap:7px}.pixel-btn{min-height:42px;border:3px solid var(--edge);background:var(--paper);color:var(--ink);font-weight:900;box-shadow:3px 3px 0 var(--edge);text-transform:uppercase;font-size:11px}.pixel-btn.primary-action{background:var(--gold);color:#172033}.pixel-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--edge)}.tip{margin:1px 0 0;font-size:10px;line-height:1.45;color:var(--muted)}kbd{border:1px solid currentColor;background:var(--paper);padding:1px 3px;color:var(--ink)}
+    .view-count{position:absolute;left:18px;bottom:18px;z-index:6;min-width:35px;padding:4px 7px;background:rgba(16,36,58,.88);color:#f5d269;border:2px solid rgba(245,210,105,.72);box-shadow:2px 2px 0 rgba(0,0,0,.4);font-size:10px;font-weight:900;line-height:1;text-align:center;pointer-events:none}.view-count[hidden]{display:none}
+    .touch-controls{display:none}.joystick{position:relative;width:104px;height:104px;border:4px solid #f5d269;background:#172033;box-shadow:inset 0 0 0 12px #2e4155,4px 4px 0 #07101a;touch-action:none;user-select:none}.joystick:before,.joystick:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(255,255,255,.22)}.joystick:before{width:65%;height:3px}.joystick:after{height:65%;width:3px}.knob{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px;background:#c54e5c;border:4px solid #fff0bb;box-shadow:4px 4px 0 #070e16;pointer-events:none}
+    .touch-actions{display:flex;align-items:center;gap:13px}.round-btn{width:66px;height:66px;border:4px solid #172033;color:#172033;font-weight:900;box-shadow:5px 5px 0 #07101a;touch-action:manipulation}.talk-btn{background:#76c1e3}.hit-btn{background:#e4b846}.round-btn:active{transform:translate(3px,3px);box-shadow:2px 2px 0 #07101a}.round-btn small{display:block;font-size:8px}
+    .overlay{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(7,13,20,.84)}.overlay[hidden]{display:none}.dialog{width:min(620px,100%);max-height:92vh;overflow:auto;background:var(--paper);color:var(--ink);border:6px double var(--edge);box-shadow:8px 8px 0 var(--red);padding:clamp(17px,4vw,31px)}.dialog h2{font-family:"Courier New",monospace;text-transform:uppercase;letter-spacing:-.06em;font-size:clamp(25px,5vw,42px);line-height:.98;color:var(--red-dark);margin:0 0 10px}.dialog p{font-family:Georgia,"Times New Roman",serif;font-size:17px;line-height:1.48;margin:0 0 16px}.flourish{color:var(--gold);font-size:19px;letter-spacing:.3em;margin-bottom:10px}.chip{display:inline-block;margin-bottom:9px;padding:4px 7px;background:var(--edge);color:var(--paper);font-size:10px;font-weight:900}.dialog-actions{display:grid;gap:9px}.dialog button{width:100%;min-height:46px;border:3px solid var(--edge);background:var(--panel);color:var(--ink);text-align:left;font-weight:900;padding:10px;box-shadow:3px 3px 0 var(--edge)}.dialog button.main{background:var(--red);color:#fff;text-align:center}.dialog button:hover{background:var(--gold);color:#172033}.overlay.textbox{align-items:flex-end;background:transparent;padding:12px;pointer-events:none}.overlay.textbox .dialog{width:min(760px,100%);max-height:43%;overflow:auto;background:#fff;color:#172033;border:7px double #172033;box-shadow:5px 5px 0 rgba(23,32,51,.68);padding:15px 18px;pointer-events:auto}.overlay.textbox .dialog h2{font-size:clamp(18px,3.5vw,28px);color:#172033;margin-bottom:6px;letter-spacing:-.04em}.overlay.textbox .dialog p{font-family:"Courier New",monospace;font-size:clamp(14px,2.4vw,19px);line-height:1.38;margin-bottom:10px}.overlay.textbox .chip{margin-bottom:5px}.overlay.textbox .flourish,.overlay.textbox .combat-art{display:none}.overlay.textbox .dialog-actions{grid-template-columns:1fr 1fr}.overlay.textbox .dialog button{min-height:38px;padding:7px 10px}.dialog .hint{font:11px/1.4 "Courier New",monospace;color:var(--muted);margin:12px 0 0}.swords{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.sword{border:3px solid var(--edge);padding:10px 6px;text-align:center;background:var(--panel);font-size:11px}.sword b{display:block;color:var(--red-dark);font-size:13px;margin-bottom:4px}.combat-art{text-align:center;font-size:40px;letter-spacing:.15em;margin:7px 0;color:var(--red-dark);font-weight:900}
+    .game-card:has(.overlay:not([hidden])) .actions,.game-card:has(.overlay:not([hidden])) .touch-controls{display:none}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    @media(min-width:801px){body{padding:0;overflow:hidden}.shell{width:100vw;height:100dvh}.mast{display:none}.game-card{height:100dvh;min-height:0;border:0;box-shadow:none}.stage{padding:12px}.side{padding:19px 16px}canvas{width:auto;height:100%;max-width:100%;max-height:100%}}
+    @media(max-width:800px){body{padding:3px}.mast p{display:none}.mast h1{font-size:23px}.game-card{display:block;min-height:0;border-width:3px}.stage{padding:5px;display:grid;grid-template-columns:1fr;overflow:visible}.stage canvas{grid-row:1;width:100%;max-height:none}.view-count{left:10px;bottom:128px;font-size:9px;padding:3px 6px}.touch-controls{grid-row:2;display:flex;justify-content:space-between;align-items:center;min-height:118px;padding:8px 20px;background:#10243a;border-top:4px solid #e4b846}.side{border:0;border-top:4px solid var(--edge);padding:9px 10px}.hero-card{position:absolute;left:9px;top:8px;z-index:4;background:rgba(247,242,223,.93);color:#172033;border:3px solid #172033;padding:4px 7px;display:block}.portrait{display:none}.hero-card strong{font-size:11px}.hero-card span{display:none}.quest{font-size:14px;min-height:38px}.gear{padding:6px}.log,.tip{display:none}.actions{position:absolute;right:8px;top:8px;z-index:5;grid-template-columns:1fr}.actions .primary-action{display:none}.pixel-btn{min-height:34px;padding:3px 7px}.progress{margin-bottom:2px}.dialog p{font-size:15px}.dialog{padding:16px}.swords{grid-template-columns:1fr}.joystick{width:94px;height:94px}.knob{width:42px;height:42px;margin:-21px}.round-btn{width:60px;height:60px}.label{margin-top:1px}}
+    @media(max-width:800px){.overlay.textbox{padding:7px}.overlay.textbox .dialog{max-height:49%;padding:11px 12px;border-width:5px}.overlay.textbox .dialog p{font-size:13px}.overlay.textbox .dialog-actions{grid-template-columns:1fr}}
+    @media(max-width:390px){.touch-controls{min-height:106px;padding:7px 14px}.joystick{width:84px;height:84px}.knob{width:38px;height:38px;margin:-19px}.round-btn{width:54px;height:54px;font-size:11px}.touch-actions{gap:9px}.dialog{max-height:95vh}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+  </style>
+</head>
+<body>
+<main class="shell">
+  <header class="mast"><h1>Valle de Salazar</h1><p>Pennywise despierta sin memoria en un reino medieval lejano.</p></header>
+  <section class="game-card" aria-label="Videojuego de aventura en el Valle de Salazar">
+    <div class="stage">
+      <canvas id="game" width="800" height="520" tabindex="0" aria-label="Mapa explorable; usa las flechas o WASD para caminar"></canvas>
+      <span class="view-count" id="visitCount" hidden aria-label="Visitas al Valle de Salazar"></span>
+      <div class="touch-controls" aria-label="Controles táctiles">
+        <button class="joystick" id="joystick" type="button" aria-label="Joystick para mover a Pennywise"><span class="knob" id="knob"></span></button>
+        <div class="touch-actions">
+          <button class="round-btn talk-btn" id="talkBtn" type="button" disabled>A<small>HABLAR</small></button>
+          <button class="round-btn hit-btn" id="hitBtn" type="button" disabled>B<small>PEGAR</small></button>
+        </div>
+      </div>
+    </div>
+    <aside class="side">
+      <div class="hero-card"><div class="portrait" aria-hidden="true"></div><div><strong>Pennywise</strong><span>payaso perdido · pasado desconocido</span></div></div>
+      <div class="label">Capítulo actual</div>
+      <p class="quest" id="questText">Despierta y busca señales de vida.</p>
+      <div class="progress" id="progress" aria-label="Progreso de la historia"></div>
+      <div class="gear"><div><b id="weaponName">Sin espada</b><br><span id="strengthText">Fuerza desconocida</span></div><span class="badge" id="chapterBadge">I / VII</span></div>
+      <div class="log" id="log" aria-live="polite"><p>La niebla cubre el valle...</p></div>
+      <div class="actions">
+        <button class="pixel-btn primary-action" id="attackBtn" type="button" disabled>B · Pegar</button>
+        <button class="pixel-btn" id="musicBtn" type="button" aria-pressed="false" disabled>♪ Música</button>
+        <button class="pixel-btn" id="restartBtn" type="button" disabled>↻ Inicio</button>
+      </div>
+      <p class="tip"><kbd>WASD</kbd> / <kbd>flechas</kbd> caminar · <kbd>Espacio</kbd> hablar · <kbd>F</kbd> pegar<br>Los bandidos y las brujas siempre aparecen en el mapa.</p>
+    </aside>
+    <div class="overlay textbox" id="overlay">
+      <div class="dialog" id="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+        <div class="flourish">◆ ── ◆</div>
+        <h2 id="dialogTitle">Un payaso fuera del tiempo</h2>
+        <p>Pennywise abre los ojos sobre la hierba mojada sin recordar absolutamente nada de su pasado. El jugador sabe que fue payaso en otro tiempo; él ni siquiera reconoce todavía su propio nombre.</p>
+        <p>A lo lejos suenan campanas. Un cartel de madera dice: <strong>Valle de Salazar</strong>.</p>
+        <button class="main" id="startBtn" type="button">Levantarse y caminar</button>
+        <p class="hint">Explora el mapa, habla con A o Espacio y usa B o F para pegar. La música comienza al iniciar.</p>
+      </div>
+    </div>
+  </section>
+  <p id="live" class="sr-only" aria-live="assertive"></p>
+</main>
+<script>
+(function(){
+  'use strict';
+  var canvas=document.getElementById('game'),ctx=canvas.getContext('2d');ctx.imageSmoothingEnabled=false;
+  var TS=48,COLS=72,ROWS=48;
+  // Una clave fija comparte el mismo contador global entre los enlaces ?lang=es y ?lang=en.
+  var VISIT_COUNTER_KEY='valle-salazar-visitas';
+  function countVisit(){
+    var badge=document.getElementById('visitCount'),controller=window.AbortController?new AbortController():null;
+    var timer=controller?setTimeout(function(){controller.abort()},4500):null;
+    fetch('https://countapi.mileshilliard.com/api/v1/hit/'+VISIT_COUNTER_KEY,controller?{signal:controller.signal}:{}).then(function(response){if(!response.ok)throw new Error('counter unavailable');return response.json()}).then(function(data){var value=Number(data.value);if(!Number.isFinite(value)||value<0)return;badge.textContent=value.toLocaleString();badge.hidden=false}).catch(function(){}).then(function(){if(timer)clearTimeout(timer)})
+  }
+  var C={outline:'#1d2b2b',grass:'#86ad63',grass2:'#7ba157',grassLight:'#b3cf83',path:'#cdb77f',path2:'#b49b68',water:'#5e9b92',water2:'#a9d1a2',tree:'#3f6b42',tree2:'#294934',leaf:'#629051',leaf2:'#8fba67',trunk:'#77543b',stone:'#77817b',stone2:'#b9c2a3',roof:'#985b45',roof2:'#c17b58',wood:'#846040',wood2:'#b68a5b',white:'#f5f1d3',red:'#b94443',red2:'#713437',gold:'#d3b35c',skin:'#c68e64',hair:'#2b2a2a',silver:'#d6d8bd',navy:'#345064',purple:'#655071',black:'#171d1d',fog:'#10201d'};
+  var grid=[],buildings=[
+    {id:'church1',x:14,y:16,w:4,h:4,type:'church',name:'Iglesia de San Gabriel'},{id:'shop1',x:8,y:23,w:4,h:3,type:'shop',name:'Forja de Mena'},{id:'inn1',x:19,y:22,w:4,h:3,type:'inn',name:'Posada del Olivo'},{id:'house1',x:8,y:17,w:3,h:3,type:'house',name:'Casa de los Rojas'},{id:'house2',x:20,y:16,w:3,h:3,type:'house',name:'Casa de los Salazar'},
+    {id:'church2',x:49,y:16,w:4,h:4,type:'church',name:'Iglesia de Santa Aurelia'},{id:'shop2',x:55,y:23,w:4,h:3,type:'shop',name:'Mercado de Villalba'},{id:'inn2',x:45,y:23,w:4,h:3,type:'inn',name:'Mesón del Peregrino'},{id:'castle',x:56,y:10,w:7,h:5,type:'castle',name:'Alcázar de Villalba'},{id:'house3',x:44,y:16,w:3,h:3,type:'house',name:'Casa de los Mendoza'},{id:'house4',x:61,y:21,w:3,h:3,type:'house',name:'Casa de los Torres'},
+    {id:'finale',x:66,y:5,w:3,h:3,type:'ruin',name:'Ermita del Espejo'}
+  ];
+  var npcs=[
+    {id:'fray',x:16,y:21,name:'Fray Esteban de Salazar',kind:'monk',age:'elder',line:'Forastero, te hallamos junto al camino antiguo. Esta tierra es el Valle de Salazar. En el archivo se cuenta que don Hernando rompió un cerco musulmán en el Paso del Olivo al proteger la retirada de los aldeanos; fue una victoria costosa, no una fiesta. Si buscas respuestas, visita la forja de Rodrigo Mena.'},
+    {id:'smith',x:11,y:27,name:'Rodrigo Mena',kind:'smith',age:'adult',line:'No pareces soldado, pero tus manos doblaron una herradura sin esfuerzo. Elige una espada; cualquiera te servirá.'},
+    {id:'elvira',x:21,y:20,name:'Doña Elvira de Salazar',kind:'nobleWoman',age:'adult',line:'Mi familia custodia Valdeluz. Los bandidos cortaron el puente hacia Santa Aurelia; no habrá paso sin valor.'},
+    {id:'tomas',x:6,y:27,name:'Tomás Rojas',kind:'young',age:'young',line:'Las brujas no aparecen de la nada. Si ves una capa violeta en el camino, todavía estás a tiempo de rodearla.'},
+    {id:'ines',x:59,y:17,name:'Doña Inés de Villalba',kind:'nobleWoman',age:'adult',line:'Bienvenido a Santa Aurelia. Nuestros archivos hablan de una ermita donde el mundo se refleja de forma imposible.'},
+    {id:'padre',x:51,y:21,name:'Padre Alonso de Mendoza',kind:'monk',age:'elder',line:'Las campanas rezan por el Santo Padre en Roma. Un códice relata cómo las tropas de Sancho de Villalba vencieron a un ejército musulmán junto al Río Blanco al cortar su puente de suministros. Otro narra la derrota musulmana de la Cuesta Roja, lograda tras abrir las murallas a familias de ambos bandos. Son memoria de guerras humanas, no permiso para odiar.'},
+    {id:'alvaro',x:46,y:27,name:'Álvaro Torres',kind:'guard',age:'young',line:'Más allá de las murallas, el sendero a la ermita está vigilado. Algunas amenazas pueden evitarse; otras cierran el único paso.'},
+    {id:'beatriz',x:55,y:28,name:'Beatriz de León',kind:'merchant',age:'adult',line:'Vendo pan, aceite y mapas. Tu mapa se completa mientras caminas; ningún pergamino sustituye tus propios pasos.'},
+    {id:'old',x:41,y:12,name:'Sancho Paredes',kind:'elder',age:'elder',line:'He vivido ochenta inviernos. Nunca vi a un hombre moverse como tú después de una batalla.'}
+  ];
+  var animals=[
+    {id:'mule',x:18,y:28,type:'mule',name:'Luna, la mula',alive:true,line:'Luna rebuzna y sacude las alforjas.'},
+    {id:'sheep1',x:12,y:30,type:'sheep',name:'Oveja del valle',alive:true,line:'La oveja mastica hierba sin apartar la vista.'},
+    {id:'sheep2',x:47,y:30,type:'sheep',name:'Oveja de Santa Aurelia',alive:true,line:'La oveja lleva una cinta de lana roja.'},
+    {id:'chicken1',x:22,y:27,type:'chicken',name:'Gallina moteada',alive:true,line:'La gallina picotea junto al camino.'},
+    {id:'chicken2',x:57,y:27,type:'chicken',name:'Gallo de Villalba',alive:true,line:'El gallo levanta la cresta y canta.'}
+  ];
+  var interiorNPCs={church:'Sacristán',house:'Habitante',shop:'Mercader',inn:'Posadero',castle:'Guardia',ruin:'Eco del espejo'};
+  var insideW=12,insideH=8;
+  var enemies=[
+    {id:'b1',x:34,y:25,type:'bandit',name:'Capitán bandido',mandatory:true,alive:true},{id:'b2',x:27,y:20,type:'bandit',name:'Bandido del robledal',mandatory:false,alive:true},{id:'b3',x:42,y:31,type:'bandit',name:'Salteador del camino',mandatory:false,alive:true},{id:'b4',x:54,y:34,type:'bandit',name:'Bandida encapuchada',mandatory:false,alive:true},{id:'w1',x:66,y:13,type:'witch',name:'Bruja del brezal',mandatory:true,alive:true},{id:'w2',x:59,y:32,type:'witch',name:'Bruja errante',mandatory:false,alive:true},{id:'w3',x:25,y:35,type:'witch',name:'Bruja del estanque',mandatory:false,alive:true}
+  ];
+  var state={started:false,paused:true,x:6,y:25,vx:6,vy:25,dir:'down',moving:false,chapter:0,weapon:'',strong:false,moves:0,defeated:0,explored:{},attackFlash:0,startTime:0,won:false,interior:null,outdoor:null};
+  var quests=[
+    'Llega a Valdeluz y habla con Fray Esteban junto a la iglesia.',
+    'Busca a Rodrigo Mena frente a la forja y consigue una espada.',
+    'Cruza el puente hacia Santa Aurelia. El capitán bandido lo bloquea.',
+    'Habla con Doña Inés de Villalba frente al alcázar.',
+    'Escucha al Padre Alonso junto a la iglesia de Santa Aurelia.',
+    'Sigue el sendero norte. La Bruja del brezal guarda el único paso.',
+    'Entra en la Ermita del Espejo y descubre de dónde vienes.'
+  ];
+  function hash(x,y){var n=(x*374761393+y*668265263)>>>0;n=(n^(n>>>13))*1274126177>>>0;return (n^(n>>>16))>>>0}
+  function initMap(){
+    var x,y;grid=[];for(y=0;y<ROWS;y++){grid[y]=[];for(x=0;x<COLS;x++)grid[y][x]=(x===0||y===0||x===COLS-1||y===ROWS-1)?'T':'g'}
+    function roadH(y,x1,x2){for(var i=x1;i<=x2;i++){grid[y][i]='.';if(y+1<ROWS)grid[y+1][i]='.'}}
+    function roadV(x,y1,y2){for(var j=y1;j<=y2;j++){grid[j][x]='.';if(x+1<COLS)grid[j][x+1]='.'}}
+    for(y=1;y<ROWS-1;y++){grid[y][34]='W';grid[y][35]='W'}
+    roadH(25,3,68);roadV(16,15,30);roadV(51,14,29);roadV(66,6,25);roadH(13,51,66);roadH(29,16,51);
+    for(x=34;x<=35;x++){grid[25][x]='=';grid[26][x]='='}
+    for(y=14;y<=31;y++)for(x=5;x<=24;x++)if(grid[y][x]==='g')grid[y][x]='v';
+    for(y=9;y<=31;y++)for(x=42;x<=64;x++)if(grid[y][x]==='g')grid[y][x]='v';
+    for(y=1;y<ROWS-1;y++)for(x=1;x<COLS-1;x++){
+      if(grid[y][x]!=='g')continue;var h=hash(x,y)%100;
+      if(h<22&&!(x>62&&x<70&&y<15))grid[y][x]='T';else if(h>=22&&h<27)grid[y][x]='B';else if(h===31)grid[y][x]='R';
+    }
+    for(y=4;y<=15;y++)for(x=62;x<=70;x++)if(!(x===66||x===67||y===13))grid[y][x]=(hash(x,y)%4)?'T':'B';
+    for(y=6;y<=25;y++){grid[y][66]='.';grid[y][67]='.'}
+    for(y=12;y<=13;y++)for(x=62;x<=67;x++)grid[y][x]='.';
+    buildings.forEach(function(b){for(var yy=b.y;yy<b.y+b.h;yy++)for(var xx=b.x;xx<b.x+b.w;xx++)grid[yy][xx]='X'});
+  }
+  function reset(){state.started=false;state.paused=true;state.x=6;state.y=25;state.vx=6;state.vy=25;state.dir='down';state.moving=false;state.chapter=0;state.weapon='';state.strong=false;state.moves=0;state.defeated=0;state.explored={};state.attackFlash=0;state.won=false;state.interior=null;state.outdoor=null;enemies.forEach(function(e){e.alive=true});animals.forEach(function(a){a.alive=true});reveal(6,25,7);updateHUD()}
+  function reveal(cx,cy,r){for(var y=Math.max(0,cy-r);y<=Math.min(ROWS-1,cy+r);y++)for(var x=Math.max(0,cx-r);x<=Math.min(COLS-1,cx+r);x++)if(Math.abs(x-cx)+Math.abs(y-cy)<=r+2)state.explored[x+','+y]=1}
+  var logs=[];function addLog(t){logs.unshift(t);logs=logs.slice(0,4);document.getElementById('log').innerHTML=logs.map(function(s,i){return '<p class="'+(i?'old':'')+'">'+esc(s)+'</p>'}).join('');document.getElementById('live').textContent=t}
+  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function updateHUD(){document.getElementById('questText').textContent=state.won?'El espejo ha revelado la verdad.':quests[Math.min(state.chapter,6)];document.getElementById('weaponName').textContent=state.weapon||'Sin espada';document.getElementById('strengthText').textContent=state.strong?'Fuerza imposible · victoria segura':'Fuerza desconocida';document.getElementById('chapterBadge').textContent=(Math.min(state.chapter,6)+1)+' / VII';var p=document.getElementById('progress');p.innerHTML='';for(var i=0;i<7;i++){var s=document.createElement('span');s.className='chapter'+(i<=state.chapter?' on':'');p.appendChild(s)}}
+  function setBackgroundDisabled(off){['talkBtn','hitBtn','attackBtn','musicBtn','restartBtn'].forEach(function(id){document.getElementById(id).disabled=off})}
+  function show(html,compact){state.paused=true;setBackgroundDisabled(true);document.getElementById('dialog').innerHTML=html;var ov=document.getElementById('overlay');ov.classList.toggle('textbox',!!compact);ov.hidden=false;var b=document.getElementById('dialog').querySelector('button');if(b)setTimeout(function(){b.focus()},30)}
+  function close(){document.getElementById('overlay').hidden=true;setBackgroundDisabled(false);state.paused=false;draw();canvas.focus()}
+  function advance(to,msg){if(state.chapter<to){state.chapter=to;updateHUD();if(msg)addLog(msg)}}
+  function start(){reset();state.started=true;state.paused=false;state.startTime=Date.now();document.getElementById('overlay').hidden=true;setBackgroundDisabled(false);logs=[];addLog('Pennywise despierta sin memoria en el Valle de Salazar.');startMusic();draw();canvas.focus()}
+  function enemyAt(x,y){for(var i=0;i<enemies.length;i++)if(enemies[i].alive&&enemies[i].x===x&&enemies[i].y===y)return enemies[i];return null}
+  function npcAt(x,y){for(var i=0;i<npcs.length;i++)if(npcs[i].x===x&&npcs[i].y===y)return npcs[i];return null}
+  function animalAt(x,y){for(var i=0;i<animals.length;i++)if(animals[i].alive&&animals[i].x===x&&animals[i].y===y)return animals[i];return null}
+  function buildingAt(x,y){for(var i=0;i<buildings.length;i++){var b=buildings[i];if(x>=b.x&&x<b.x+b.w&&y>=b.y&&y<b.y+b.h)return b}return null}
+  function adjacentTarget(list){var best=null,d=99;for(var i=0;i<list.length;i++){if(list[i].alive===false)continue;var dd=Math.abs(state.x-list[i].x)+Math.abs(state.y-list[i].y);if(dd<d&&dd<=2){d=dd;best=list[i]}}return best}
+  function interact(){
+    if(!state.started||state.paused)return;
+    if(state.interior){var d=Math.abs(state.x-4)+Math.abs(state.y-4);if(d<=2){talkInside();return}var b=state.interior;if(b.type==='church'&&state.y<=3){show('<span class="chip">'+esc(b.name)+'</span><h2 id="dialogTitle">Altar del valle</h2><p>Las velas arden ante una cruz de madera. Las campanas se oyen amortiguadas tras los muros de piedra.</p><button class="main" id="insideClose">Continuar</button>',true);document.getElementById('insideClose').onclick=close;return}addLog('Muebles, vigas y muros guardan historias del valle.');sfx('tap');return}
+    var target=adjacentTarget(npcs);if(target){talk(target);return}
+    var animal=adjacentTarget(animals);if(animal){show('<span class="chip">animal</span><h2 id="dialogTitle">'+esc(animal.name)+'</h2><p>'+esc(animal.line)+'</p><button class="main" id="animalClose">Seguir</button>',true);document.getElementById('animalClose').onclick=close;sfx('talk');return}
+    var nearBuilding=null;for(var i=0;i<buildings.length;i++){var b=buildings[i],nx=Math.max(b.x,Math.min(state.x,b.x+b.w-1)),ny=Math.max(b.y,Math.min(state.y,b.y+b.h-1));if(Math.abs(state.x-nx)+Math.abs(state.y-ny)<=1){nearBuilding=b;break}}
+    if(nearBuilding){enterInterior(nearBuilding);return}var e=adjacentTarget(enemies);if(e){encounter(e);return}addLog('Solo responden el viento y las campanas.');sfx('tap')
+  }
+  function talk(n){
+    var label=n.kind==='mule'?'animal · mula':(n.age==='elder'?'persona mayor':n.age==='young'?'persona joven':'habitante del valle');
+    show('<span class="chip">'+esc(label)+'</span><h2 id="dialogTitle">'+esc(n.name)+'</h2><p>«'+esc(n.line)+'»</p><button class="main" id="closeTalk">Seguir viaje</button>',true);
+    document.getElementById('closeTalk').onclick=function(){close();if(n.id==='fray'&&state.chapter===0)advance(1,'Fray Esteban te envía a la forja de Rodrigo Mena.');if(n.id==='ines'&&state.chapter===3)advance(4,'Doña Inés te recomienda escuchar al Padre Alonso.');if(n.id==='padre'&&state.chapter===4)advance(5,'El Padre Alonso señala el camino de la Ermita del Espejo.');addLog('Hablaste con '+n.name+'.')};sfx('talk')
+  }
+  function chooseSword(){show('<span class="chip">Forja de Mena</span><h2 id="dialogTitle">Elige una espada</h2><p>Rodrigo coloca tres armas sobre el banco. Pennywise toma cada una como si no pesara nada. De pronto comprende que su fuerza no pertenece a este mundo.</p><div class="swords"><button data-sword="Espada corta"><b>Espada corta</b>rápida y sencilla</button><button data-sword="Espada de hierro"><b>Espada de hierro</b>firme y común</button><button data-sword="Espada vieja"><b>Espada vieja</b>gastada pero útil</button></div><p class="hint">Pennywise es tan fuerte que vencerá con cualquiera. Elige la que prefieras.</p>');document.querySelectorAll('[data-sword]').forEach(function(b){b.onclick=function(){state.weapon=b.dataset.sword;state.strong=true;advance(2,'Pennywise descubre una fuerza imposible. El puente espera.');sfx('win');show('<div class="combat-art">†</div><h2 id="dialogTitle">Fuerza de otro mundo</h2><p>Pennywise blande la '+esc(state.weapon.toLowerCase())+'. La hoja silba en el aire y parte un tronco de práctica. Cualquier espada será suficiente en sus manos.</p><button class="main" id="takeSword">Guardar la espada</button>');document.getElementById('takeSword').onclick=close}})}
+  function doorOf(b){return{x:b.x+Math.floor(b.w/2),y:b.y+b.h-1}}
+  function enterInterior(b){
+    if(b.id==='finale'&&state.chapter>=6){finish();return}
+    if(b.id==='finale'&&state.chapter<6){addLog('La ermita permanece oscura. Aún falta comprender el camino.');return}
+    state.outdoor={x:state.x,y:state.y,vx:state.vx,vy:state.vy,dir:state.dir};state.interior=b;state.x=6;state.y=6;state.vx=6;state.vy=6;state.dir='up';state.moving=false;addLog('Entraste en '+b.name+'.');sfx('talk');draw()
+  }
+  function leaveInterior(){var b=state.interior,d=doorOf(b);state.interior=null;state.x=d.x;state.y=b.y+b.h;state.vx=state.x;state.vy=state.y;state.dir='down';state.moving=false;addLog('Saliste de '+b.name+'.');sfx('step');draw()}
+  function talkInside(){
+    var b=state.interior,role=interiorNPCs[b.type]||'Habitante',text=b.type==='church'?'«Peregrino, aquí rezamos por el valle y por el Santo Padre en Roma. Descansa antes de seguir.»':b.type==='house'?'«Pasa, forastero. En esta casa siempre hay sitio junto al fuego.»':b.type==='shop'?'«Mira cuanto quieras. Los viajeros traen noticias mejores que las monedas.»':b.type==='castle'?'«La casa Villalba custodia estas tierras. No cruces las puertas armadas sin anunciarte.»':'«El camino es largo. Siéntate un momento y recupera fuerzas.»';
+    show('<span class="chip">interior · '+esc(b.name)+'</span><h2 id="dialogTitle">'+esc(role)+'</h2><p>'+text+'</p><button class="main" id="insideTalkClose">Seguir explorando</button>',true);document.getElementById('insideTalkClose').onclick=function(){close();if(b.id==='shop1'&&state.chapter===1)chooseSword()};sfx('talk')
+  }
+  function encounter(e){
+    var who=e.type==='witch'?'Una bruja visible bloquea el sendero.':'Un bandido visible desenvaina frente a ti.';var evade=e.mandatory?'Este es el único paso; no podrás esquivarlo.':'Puedes intentar rodearlo sin luchar.';
+    show('<span class="chip">Encuentro en el mapa</span><div class="combat-art">'+(e.type==='witch'?'♜':'⚔')+'</div><h2 id="dialogTitle">'+esc(e.name)+'</h2><p>'+who+' '+evade+'</p><div class="dialog-actions"><button class="main" id="fightNow">Pegar con '+esc(state.weapon||'las manos')+'</button><button id="evadeNow">Intentar esquivar</button></div>',true);
+    document.getElementById('fightNow').onclick=function(){fight(e)};document.getElementById('evadeNow').onclick=function(){if(e.mandatory){sfx('wrong');addLog(e.name+' cierra el único paso.');close()}else{e.x=Math.max(2,Math.min(COLS-3,e.x+(state.x<=e.x?2:-2)));sfx('step');close();addLog('Pennywise rodea a '+e.name+'.')}}
+  }
+  function fight(e){
+    if(e.id==='w1'&&state.chapter<5){sfx('wrong');show('<h2 id="dialogTitle">Un velo invisible</h2><p>La bruja está a la vista, pero un círculo de símbolos impide acercarse. Pennywise tendrá que aprender el secreto del camino en Santa Aurelia antes de combatirla.</p><button class="main" id="wardBack">Volver al sendero</button>');document.getElementById('wardBack').onclick=close;return}
+    if(!state.weapon){sfx('wrong');show('<h2 id="dialogTitle">Aún sin espada</h2><p>Pennywise siente una fuerza enorme, pero no comprende cómo usarla. Será mejor volver a la forja de Rodrigo Mena.</p><button class="main" id="backFight">Retroceder</button>');document.getElementById('backFight').onclick=close;return}
+    e.alive=false;state.defeated++;state.attackFlash=10;sfx('sword');if(e.id==='b1'&&state.chapter===2)advance(3,'El puente queda libre. Santa Aurelia se alza al este.');if(e.id==='w1'&&state.chapter===5)advance(6,'La senda a la Ermita del Espejo está abierta.');
+    show('<div class="combat-art">⚔</div><h2 id="dialogTitle">Un solo golpe</h2><p>Pennywise apenas mueve la '+esc(state.weapon.toLowerCase())+'. '+esc(e.name)+' pierde el arma y huye. No hay duda: con cualquier espada, Pennywise siempre gana.</p><button class="main" id="winFight">Continuar</button>');document.getElementById('winFight').onclick=function(){close();addLog(e.name+' ha sido derrotado.')}
+  }
+  function attack(){if(!state.started||state.paused)return;state.attackFlash=8;if(state.interior){addLog('Pennywise contiene el golpe dentro del edificio.');sfx('tap');draw();return}var e=adjacentTarget(enemies);if(e){encounter(e);return}var a=null,ad=99;for(var ai=0;ai<animals.length;ai++){var aa=animals[ai];if(!aa.alive)continue;var dd=Math.abs(state.x-aa.x)+Math.abs(state.y-aa.y);if(dd<ad&&dd<=3){ad=dd;a=aa}}if(a){a.alive=false;sfx('sword');draw();addLog(a.name+' ha caído. Su cuerpo permanece en el mapa.');show('<span class="chip">animal abatido</span><h2 id="dialogTitle">'+esc(a.name)+'</h2><p>Pennywise descubre que su fuerza también puede acabar con una vida. El cuerpo queda inmóvil junto al camino.</p><button class="main" id="animalDown">Continuar</button>',true);document.getElementById('animalDown').onclick=close;return}addLog('Pennywise prueba un golpe. El aire tiembla.');sfx('sword');draw()}
+  function finish(){state.won=true;state.paused=true;sfx('fanfare');var mins=Math.max(1,Math.round((Date.now()-state.startTime)/60000));show('<div class="flourish">◆ ◆ ◆</div><h2 id="dialogTitle">El otro Pennywise</h2><p>En el espejo, Pennywise ve una ciudad de otro universo. Allí existe un hermano gemelo con su mismo nombre: una criatura que se disfraza de payaso y se alimenta de personas, el Pennywise de las novelas de Stephen King.</p><p>Él no es esa criatura. Es un payaso perdido que cayó desde otro universo al Valle de Salazar. Su memoria sigue incompleta, pero ahora conoce la verdad y el camino de regreso se ha abierto.</p><div class="gear"><div><b>Valle recorrido</b><br><span>'+state.defeated+' enemigos vencidos · '+mins+' min de esta partida</span></div><span class="badge">FIN</span></div><br><button class="main" id="again">Volver a despertar</button>');document.getElementById('again').onclick=showIntro;updateHUD()}
+  function isWalkable(x,y){if(state.interior){if(x<1||x>10||y<2||y>6)return false;if((x===2||x===3)&&(y===3||y===4))return false;if((x===8||x===9)&&y===3)return false;if(x===4&&y===4)return false;return true}if(x<0||y<0||x>=COLS||y>=ROWS)return false;var c=grid[y][x];return c!=='T'&&c!=='B'&&c!=='W'&&c!=='R'&&c!=='X'}
+  function walk(dx,dy,dir){
+    if(!state.started||state.paused||state.moving)return;state.dir=dir;var nx=state.x+dx,ny=state.y+dy;if(state.interior&&dy>0&&state.y===6&&(state.x===5||state.x===6)){leaveInterior();return}if(!state.interior){for(var bi=0;bi<buildings.length;bi++){var bd=doorOf(buildings[bi]);if(nx===bd.x&&ny===bd.y){enterInterior(buildings[bi]);return}}}var e=state.interior?null:enemyAt(nx,ny);if(e){encounter(e);return}if(!state.interior&&animalAt(nx,ny)){sfx('tap');draw();return}if(!isWalkable(nx,ny)){sfx('tap');draw();return}
+    if(enemies[0].alive&&((ny===25||ny===26)&&(nx===34||nx===35))){encounter(enemies[0]);return}if(enemies[4].alive&&((ny===12||ny===13)&&(nx===66||nx===67))){encounter(enemies[4]);return}
+    var fx=state.x,fy=state.y,start=performance.now();state.moving=true;function frame(now){var t=Math.min(1,(now-start)/105),q=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;state.vx=fx+(nx-fx)*q;state.vy=fy+(ny-fy)*q;draw();if(t<1){requestAnimationFrame(frame);return}state.x=nx;state.y=ny;state.vx=nx;state.vy=ny;state.moving=false;state.moves++;if(!state.interior)reveal(nx,ny,6);sfx('step');draw()}requestAnimationFrame(frame)
+  }
+  function key(k){if(k==='ArrowUp'||k==='w'||k==='W')walk(0,-1,'up');else if(k==='ArrowDown'||k==='s'||k==='S')walk(0,1,'down');else if(k==='ArrowLeft'||k==='a'||k==='A')walk(-1,0,'left');else if(k==='ArrowRight'||k==='d'||k==='D')walk(1,0,'right');else if(k===' '||k==='Enter'||k==='e'||k==='E')interact();else if(k==='f'||k==='F')attack()}
+  function camera(){if(state.interior)return{x:0,y:0};var px=state.vx*TS+TS/2,py=state.vy*TS+TS/2;return{x:Math.max(0,Math.min(COLS*TS-canvas.width,px-canvas.width/2)),y:Math.max(0,Math.min(ROWS*TS-canvas.height,py-canvas.height/2))}}
+  function r(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h))}
+  function tileGround(c,x,y,gx,gy){
+    var g=(gx+gy)%2?C.grass:C.grass2;r(x,y,TS,TS,g);var h=hash(gx,gy);
+    if(c==='g'||c==='T'||c==='B'||c==='R'){r(x+5+(h%28),y+7+((h>>5)%25),3,6,C.grassLight);if(h%4===0){r(x+31,y+31,3,7,C.leaf2);r(x+28,y+34,9,2,C.leaf2)}}
+    if(c==='v'||c==='X'){r(x,y,TS,TS,(gx+gy)%2?C.grassLight:'#94bf75');r(x,y,TS,3,'#648b51');r(x+4,y+9,3,3,C.grass)}
+    if(c==='.'||c==='='){r(x,y,TS,TS,(gx+gy)%2?C.path:C.path2);r(x+6,y+8,5,3,'#9b875d');r(x+34,y+31,4,3,'#9b875d')}
+    if(c==='W'){r(x,y,TS,TS,C.water);for(var i=0;i<TS;i+=12){r(x+i,y+7+(gy%2)*5,8,3,C.water2);r(x+i+5,y+27,9,3,'#3c8eaf')}}
+    if(c==='='){r(x,y+8,TS,5,C.wood);r(x,y+34,TS,5,C.wood);for(var j=0;j<TS;j+=12){r(x+j,y+4,7,39,C.outline);r(x+j+2,y+6,3,35,C.wood2)}}
+  }
+  function tree(x,y,small){var s=small?0.8:1,ox=small?5:0,oy=small?8:0;r(x+18,y+26,12,18,C.outline);r(x+21,y+26,6,18,C.trunk);r(x+4+ox,y+11+oy,40*s,27*s,C.outline);r(x+1+ox,y+18+oy,46*s,16*s,C.outline);r(x+9+ox,y+5+oy,30*s,30*s,C.outline);r(x+7+ox,y+13+oy,34*s,20*s,C.tree2);r(x+4+ox,y+21+oy,40*s,10*s,C.tree);r(x+12+ox,y+8+oy,24*s,25*s,C.leaf);r(x+15+ox,y+11+oy,8*s,6*s,C.leaf2);r(x+31+ox,y+22+oy,6*s,5*s,C.leaf2);r(x+7,y+44,36,3,C.outline)}
+  function bush(x,y){r(x+5,y+23,38,17,C.outline);r(x+10,y+18,15,20,C.outline);r(x+24,y+16,14,22,C.outline);r(x+8,y+25,32,11,C.tree);r(x+13,y+21,11,14,C.leaf);r(x+26,y+19,10,16,C.leaf2);r(x+17,y+24,5,4,'#c7e8a6');r(x+33,y+27,4,4,'#c7e8a6')}
+  function rock(x,y){r(x+8,y+25,32,15,C.outline);r(x+13,y+18,21,20,C.outline);r(x+16,y+21,15,15,C.stone);r(x+14,y+27,23,10,C.stone);r(x+19,y+21,9,5,C.stone2)}
+  function drawBuilding(b){var x=b.x*TS,y=b.y*TS,w=b.w*TS,h=b.h*TS;if(b.type==='castle'){r(x+8,y+28,w-16,h-31,C.outline);r(x+13,y+33,w-26,h-41,C.stone);for(var t=0;t<3;t++){var tx=x+12+t*(w-34)/2;r(tx,y+4,34,48,C.outline);r(tx+5,y+10,24,38,C.stone2);r(tx+10,y,7,13,C.outline);r(tx+22,y,7,13,C.outline)}r(x+w/2-18,y+h-57,36,57,C.outline);r(x+w/2-12,y+h-51,24,51,C.wood);r(x+w/2-3,y+h-42,6,42,C.black);return}
+    if(b.type==='ruin'){r(x+6,y+26,w-12,h-31,C.outline);r(x+12,y+32,w-24,h-43,C.stone);r(x+18,y+8,w-36,28,C.outline);r(x+25,y+15,w-50,17,C.stone2);r(x+w/2-7,y+17,14,28,C.gold);r(x+w/2-3,y+14,6,35,C.white);return}
+    r(x+6,y+31,w-12,h-34,C.outline);r(x+11,y+36,w-22,h-44,b.type==='church'?C.white:b.type==='shop'?C.wood2:'#d6bf91');
+    r(x,y+22,w,18,C.outline);for(var i=6;i<w-4;i+=24)r(x+i,y+13,22,21,C.roof);r(x+10,y+17,w-20,16,C.roof2);
+    if(b.type==='church'){r(x+w/2-16,y-10,32,47,C.outline);r(x+w/2-10,y-4,20,36,C.stone2);r(x+w/2-3,y-26,6,22,C.outline);r(x+w/2-12,y-19,24,6,C.outline);r(x+w/2-4,y+7,8,12,C.water)}
+    if(b.type==='shop'){r(x+8,y+39,w-16,14,C.outline);for(var a=x+12;a<x+w-12;a+=20)r(a,y+42,10,8,(a/20)%2?C.red:C.white)}
+    r(x+w/2-11,y+h-43,22,43,C.outline);r(x+w/2-6,y+h-38,12,38,C.wood);r(x+17,y+h-50,18,17,C.outline);r(x+21,y+h-46,10,9,C.water2);r(x+w-35,y+h-50,18,17,C.outline);r(x+w-31,y+h-46,10,9,C.water2)
+  }
+  function humanSprite(n,x,y){var old=n.age==='elder',woman=n.kind==='nobleWoman';r(x+11,y+43,26,4,C.outline);r(x+14,y+9,20,17,C.outline);r(x+18,y+13,12,11,C.skin);var hair=old?C.silver:C.hair;r(x+14,y+7,20,8,hair);if(woman){r(x+11,y+10,7,19,hair);r(x+31,y+10,7,19,hair)}r(x+20,y+17,3,3,C.outline);r(x+28,y+17,3,3,C.outline);var tunic=n.kind==='monk'?C.wood:(n.kind==='guard'?C.red2:(woman?C.purple:C.navy));r(x+10,y+25,29,18,C.outline);r(x+14,y+28,21,13,tunic);r(x+6,y+28,7,12,C.outline);r(x+37,y+28,7,12,C.outline);if(old)r(x+18,y+23,14,5,C.silver);if(n.kind==='nobleWoman'){r(x+9,y+6,31,6,C.gold);r(x+14,y+2,5,7,C.gold);r(x+30,y+2,5,7,C.gold)}}
+  function mule(x,y){r(x+5,y+26,34,15,C.outline);r(x+9,y+28,27,10,'#a67c58');r(x+34,y+18,12,16,C.outline);r(x+37,y+20,7,11,'#bd9169');r(x+36,y+10,4,11,C.outline);r(x+44,y+11,4,11,C.outline);r(x+38,y+23,3,3,C.white);r(x+11,y+39,5,8,C.outline);r(x+30,y+39,5,8,C.outline)}
+  function animalSprite(a,x,y){if(!a.alive){r(x+7,y+34,35,9,C.outline);r(x+11,y+31,27,9,a.type==='sheep'?C.white:a.type==='chicken'?C.gold:C.wood2);r(x+35,y+34,8,4,C.red2);return}if(a.type==='mule'){mule(x,y);return}if(a.type==='sheep'){r(x+6,y+24,34,18,C.outline);r(x+9,y+21,27,18,C.white);r(x+33,y+24,12,13,C.outline);r(x+36,y+27,7,8,C.hair);r(x+12,y+39,5,8,C.outline);r(x+31,y+39,5,8,C.outline);return}r(x+15,y+25,20,17,C.outline);r(x+18,y+27,15,12,C.gold);r(x+29,y+20,11,13,C.outline);r(x+32,y+22,7,8,C.white);r(x+38,y+25,8,4,C.red);r(x+19,y+40,4,7,C.outline);r(x+29,y+40,4,7,C.outline);r(x+22,y+20,6,7,C.red)}
+  function enemySprite(e,x,y){if(e.type==='witch'){r(x+13,y+13,24,16,C.outline);r(x+18,y+16,14,11,C.skin);r(x+7,y+11,36,7,C.outline);r(x+13,y+3,23,11,C.purple);r(x+19,y-3,12,12,C.purple);r(x+9,y+27,32,19,C.outline);r(x+14,y+30,22,15,C.purple);r(x+20,y+20,3,3,C.red);r(x+29,y+20,3,3,C.red)}else{r(x+14,y+9,21,18,C.outline);r(x+18,y+13,13,12,C.skin);r(x+12,y+7,25,9,C.red2);r(x+19,y+18,12,5,C.black);r(x+9,y+27,31,18,C.outline);r(x+14,y+30,21,13,'#59453e');r(x+4,y+30,8,14,C.outline);r(x+39,y+23,5,25,C.stone2)}r(x+8,y+45,33,3,C.outline)}
+  function player(x,y){var bob=state.moving&&state.moves%2?1:0;r(x+10,y+44,29,4,C.outline);r(x+12,y+7+bob,25,19,C.outline);r(x+16,y+10+bob,17,14,C.white);r(x+7,y+8+bob,10,13,C.red);r(x+33,y+8+bob,10,13,C.red);r(x+23,y+16+bob,5,5,C.red);r(x+18,y+14+bob,3,3,C.navy);r(x+30,y+14+bob,3,3,C.navy);r(x+20,y+22+bob,12,3,C.red2);r(x+9,y+27+bob,31,17,C.outline);r(x+13,y+30+bob,23,12,C.white);for(var i=13;i<36;i+=8)r(x+i,y+30+bob,5,12,C.red);r(x+5,y+29+bob,7,12,C.outline);r(x+39,y+29+bob,7,12,C.outline);r(x+14,y+42,8,5,C.navy);r(x+29,y+42,8,5,C.navy);if(state.weapon){r(x+42,y+15,5,28,C.outline);r(x+43,y+16,3,22,C.stone2);r(x+38,y+37,13,4,C.gold)}if(state.attackFlash>0){r(x+43,y+4,5,37,C.white);r(x+39,y+7,13,4,C.gold);state.attackFlash--}}
+  function drawInterior(){
+    r(0,0,canvas.width,canvas.height,'#1d2b2b');var scale=Math.min(canvas.width/(insideW*TS),canvas.height/(insideH*TS)),ox=(canvas.width-insideW*TS*scale)/2,oy=(canvas.height-insideH*TS*scale)/2;ctx.save();ctx.translate(Math.round(ox),Math.round(oy));ctx.scale(scale,scale);var b=state.interior;
+    for(var y=0;y<insideH;y++)for(var x=0;x<insideW;x++){var wall=y<2||x===0||x===insideW-1||y===insideH-1;r(x*TS,y*TS,TS,TS,wall?(b.type==='church'?C.stone2:C.wood2):((x+y)%2?C.grassLight:'#a3bf77'));if(!wall){r(x*TS,y*TS,TS,3,'#78925d');r(x*TS+8,y*TS+8,3,3,'#6f8755')}}
+    for(var wx=1;wx<11;wx++){r(wx*TS,TS,TS,5,C.outline);r(wx*TS+7,12,34,25,b.type==='church'?C.stone:C.wood)}
+    if(b.type==='church'){r(5*TS,TS+5,2*TS,38,C.outline);r(5*TS+6,TS+11,2*TS-12,26,C.white);r(6*TS-4,TS+2,8,35,C.gold);r(6*TS-15,TS+12,30,7,C.gold)}else{r(5*TS,TS+8,2*TS,28,C.outline);r(5*TS+7,TS+14,2*TS-14,15,C.wood)}
+    r(2*TS,3*TS,2*TS,2*TS,C.outline);r(2*TS+6,3*TS+6,2*TS-12,2*TS-12,b.type==='church'?C.wood:C.roof2);r(8*TS,3*TS,2*TS,TS,C.outline);r(8*TS+6,3*TS+6,2*TS-12,TS-12,C.wood);
+    r(5*TS,7*TS,2*TS,TS,C.outline);r(5*TS+9,7*TS,2*TS-18,TS,C.black);var fake={kind:b.type==='church'?'monk':b.type==='castle'?'guard':'merchant',age:b.type==='church'?'elder':'adult'};humanSprite(fake,4*TS,4*TS);player(state.vx*TS,state.vy*TS);ctx.restore();
+  }
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);if(state.interior){drawInterior();if(state.attackFlash>0&&!state.paused)requestAnimationFrame(draw);return}var cam=camera(),x0=Math.max(0,Math.floor(cam.x/TS)-2),y0=Math.max(0,Math.floor(cam.y/TS)-2),x1=Math.min(COLS,Math.ceil((cam.x+canvas.width)/TS)+2),y1=Math.min(ROWS,Math.ceil((cam.y+canvas.height)/TS)+2);ctx.save();ctx.translate(-Math.round(cam.x),-Math.round(cam.y));
+    for(var y=y0;y<y1;y++)for(var x=x0;x<x1;x++)tileGround(grid[y][x],x*TS,y*TS,x,y);
+    for(y=y0;y<y1;y++)for(x=x0;x<x1;x++){var c=grid[y][x];if(c==='T')tree(x*TS,y*TS,false);else if(c==='B')bush(x*TS,y*TS);else if(c==='R')rock(x*TS,y*TS)}
+    buildings.forEach(function(b){if(b.x+b.w>=x0&&b.x<=x1&&b.y+b.h>=y0&&b.y<=y1)drawBuilding(b)});
+    npcs.forEach(function(n){if(n.x>=x0-1&&n.x<=x1&&n.y>=y0-1&&n.y<=y1){if(n.kind==='mule')mule(n.x*TS,n.y*TS);else humanSprite(n,n.x*TS,n.y*TS)}});
+    enemies.forEach(function(e){if(e.alive&&e.x>=x0-1&&e.x<=x1&&e.y>=y0-1&&e.y<=y1)enemySprite(e,e.x*TS,e.y*TS)});
+    animals.forEach(function(a){if(a.x>=x0-1&&a.x<=x1&&a.y>=y0-1&&a.y<=y1)animalSprite(a,a.x*TS,a.y*TS)});
+    if(state.started)player(state.vx*TS,state.vy*TS);
+    for(y=y0;y<y1;y++)for(x=x0;x<x1;x++)if(!state.explored[x+','+y]){r(x*TS,y*TS,TS,TS,'rgba(8,20,31,.86)');if((x+y)%2===0)r(x*TS+6,y*TS+6,5,5,'rgba(111,146,164,.18)')}
+    ctx.restore();if(state.attackFlash>0&&!state.paused)requestAnimationFrame(draw)
+  }
+  var audio=null,gain=null,musicTimer=null,musicOn=false,note=0,melody=[62,65,69,67,65,62,60,62,65,67,69,72,69,67,65,0,57,60,62,64,65,64,62,60,57,60,62,60,57,55,57,0];
+  function audioReady(){var AC=window.AudioContext||window.webkitAudioContext;if(!AC)return Promise.reject();if(!audio){audio=new AC();gain=audio.createGain();gain.gain.value=.72;gain.connect(audio.destination)}return audio.state==='suspended'?audio.resume():Promise.resolve()}
+  function tone(f,d,type,v,delay){if(!audio||!gain)return;var at=audio.currentTime+(delay||0),o=audio.createOscillator(),g=audio.createGain();o.type=type||'triangle';o.frequency.value=f;g.gain.setValueAtTime(.0001,at);g.gain.exponentialRampToValueAtTime(v||.04,at+.015);g.gain.exponentialRampToValueAtTime(.0001,at+d);o.connect(g);g.connect(gain);o.start(at);o.stop(at+d+.03)}
+  function hz(n){return 440*Math.pow(2,(n-69)/12)}function beat(){if(!musicOn||!audio||audio.state!=='running')return;var n=melody[note++%melody.length];if(n){tone(hz(n),.28,'triangle',.065,0);tone(hz(n)*2,.12,'sine',.018,0);if(note%4===1)tone(hz(n-12),.7,'triangle',.03,0)}}
+  function startMusic(){if(musicOn)return;audioReady().then(function(){musicOn=true;document.getElementById('musicBtn').textContent='♫ Sonando';document.getElementById('musicBtn').setAttribute('aria-pressed','true');beat();musicTimer=setInterval(beat,320)}).catch(function(){document.getElementById('musicBtn').textContent='♪ Activar'})}
+  function stopMusic(){musicOn=false;clearInterval(musicTimer);musicTimer=null;document.getElementById('musicBtn').textContent='♪ Música';document.getElementById('musicBtn').setAttribute('aria-pressed','false')}
+  function sfx(k){if(!audio||!state.started)return;var f={step:90,tap:120,talk:260,wrong:105,sword:620,win:520,fanfare:660}[k]||180;var d=k==='fanfare'?.55:.1;tone(f,d,k==='step'?'sine':'square',k==='step'?.014:.05,0);if(k==='win'||k==='fanfare')setTimeout(function(){tone(f*1.25,d,'triangle',.06,0)},120)}
+  function showIntro(){stopMusic();reset();draw();show('<div class="flourish">◆ ── ◆</div><h2 id="dialogTitle">Un payaso fuera del tiempo</h2><p>Pennywise abre los ojos sobre la hierba mojada sin recordar absolutamente nada de su pasado. El jugador sabe que fue payaso en otro tiempo; él ni siquiera reconoce todavía su propio nombre.</p><p>A lo lejos suenan campanas. Un cartel de madera dice: <strong>Valle de Salazar</strong>.</p><button class="main" id="startAgain">Levantarse y caminar</button><p class="hint">Explora el mapa, habla con A o Espacio y usa B o F para pegar. La música comienza al iniciar.</p>',true);document.getElementById('startAgain').onclick=start}
+  document.addEventListener('keydown',function(e){var ks=['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','Enter','w','a','s','d','f','e','W','A','S','D','F','E'];if(ks.indexOf(e.key)>=0){if(state.started&&!state.paused)e.preventDefault();key(e.key)}});
+  var joy=document.getElementById('joystick'),knob=document.getElementById('knob'),pointer=null,joyDir='',joyTimer=null;function joyStep(){if(joyDir==='up')walk(0,-1,'up');else if(joyDir==='down')walk(0,1,'down');else if(joyDir==='left')walk(-1,0,'left');else if(joyDir==='right')walk(1,0,'right')}function stopJoy(){pointer=null;joyDir='';clearInterval(joyTimer);joyTimer=null;knob.style.transform='translate(0,0)'}function moveJoy(e){var b=joy.getBoundingClientRect(),dx=e.clientX-(b.left+b.width/2),dy=e.clientY-(b.top+b.height/2),dist=Math.sqrt(dx*dx+dy*dy)||1,max=b.width*.28,scale=Math.min(1,max/dist);dx*=scale;dy*=scale;knob.style.transform='translate('+dx+'px,'+dy+'px)';var next=dist>b.width*.12?(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up')):'';if(next&&next!==joyDir){joyDir=next;clearInterval(joyTimer);joyStep();joyTimer=setInterval(joyStep,140)}else if(!next){joyDir='';clearInterval(joyTimer);joyTimer=null}}
+  joy.addEventListener('pointerdown',function(e){e.preventDefault();pointer=e.pointerId;joy.setPointerCapture(pointer);moveJoy(e)});joy.addEventListener('pointermove',function(e){if(e.pointerId===pointer){e.preventDefault();moveJoy(e)}});joy.addEventListener('pointerup',stopJoy);joy.addEventListener('pointercancel',stopJoy);joy.addEventListener('lostpointercapture',stopJoy);
+  document.getElementById('talkBtn').onclick=interact;document.getElementById('hitBtn').onclick=attack;document.getElementById('attackBtn').onclick=attack;document.getElementById('musicBtn').onclick=function(){if(!state.started)return;if(musicOn)stopMusic();else startMusic()};document.getElementById('restartBtn').onclick=showIntro;document.getElementById('startBtn').onclick=start;
+  initMap();reset();draw();countVisit();
+})();
+</script>
+</body>
+</html>
