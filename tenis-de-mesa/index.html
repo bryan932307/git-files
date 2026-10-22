@@ -1,0 +1,1308 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Tenis de mesa P2P</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #edf1ec;
+        --panel: #ffffff;
+        --panel-2: #f4f7f3;
+        --ink: #152219;
+        --muted: #5b6d60;
+        --line: #d3dcd2;
+        --accent: #0d7a48;
+        --accent-dark: #095c35;
+        --accent-soft: #e2f2e7;
+        --danger: #c0392b;
+        --code-bg: #0e1f16;
+        --code-ink: #cdeeda;
+        --shadow: 0 10px 30px rgba(18, 43, 28, 0.10);
+        color-scheme: light;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0a130e;
+          --panel: #122019;
+          --panel-2: #0e1a13;
+          --ink: #e9f2ea;
+          --muted: #9db3a4;
+          --line: #24382c;
+          --accent: #2fbf71;
+          --accent-dark: #25a35e;
+          --accent-soft: #173325;
+          --danger: #e06a5b;
+          --code-bg: #060d09;
+          --code-ink: #b9e6c9;
+          --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+          color-scheme: dark;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Archivo", system-ui, -apple-system, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 1060px; margin: 0 auto; padding: 22px 16px 44px; }
+      h1 { font-size: clamp(26px, 4.5vw, 36px); font-weight: 900; letter-spacing: -0.02em; margin: 0 0 6px; }
+      .lead { color: var(--muted); font-size: 16px; line-height: 1.5; margin: 0 0 20px; max-width: 62ch; }
+      .lead strong { color: var(--ink); }
+
+      /* ---------- Mode tabs ---------- */
+      .tabs { display: flex; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px; box-shadow: var(--shadow); flex-wrap: wrap; }
+      .tab {
+        flex: 1 1 150px; appearance: none; border: 0; cursor: pointer; border-radius: 10px;
+        padding: 11px 10px; font: inherit; font-weight: 700; font-size: 15px;
+        background: transparent; color: var(--muted); transition: background 0.15s, color 0.15s;
+      }
+      .tab[aria-selected="true"] { background: var(--accent); color: #fff; }
+      .tab:focus-visible, .btn:focus-visible, input.code-input:focus-visible, select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+      .panel {
+        background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+        padding: 18px; margin-top: 14px; box-shadow: var(--shadow);
+      }
+      .panel h2 { font-size: 18px; font-weight: 800; margin: 0 0 4px; }
+      .panel p { color: var(--muted); line-height: 1.55; margin: 0 0 12px; font-size: 15px; }
+      .hidden { display: none !important; }
+
+      .role-switch { display: flex; gap: 6px; margin: 4px 0 16px; flex-wrap: wrap; }
+      .role-btn {
+        appearance: none; cursor: pointer; font: inherit; font-weight: 700; font-size: 14px;
+        border: 1.5px solid var(--line); background: var(--panel-2); color: var(--ink);
+        padding: 9px 16px; border-radius: 999px;
+      }
+      .role-btn[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-dark); }
+      @media (prefers-color-scheme: dark) { .role-btn[aria-pressed="true"] { color: var(--accent); } }
+
+      ol.steps { list-style: none; counter-reset: paso; margin: 0; padding: 0; display: grid; gap: 16px; }
+      ol.steps > li { counter-increment: paso; position: relative; padding-left: 44px; }
+      ol.steps > li::before {
+        content: counter(paso); position: absolute; left: 0; top: 0;
+        width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff;
+        font-weight: 800; font-size: 15px; display: grid; place-items: center;
+      }
+      ol.steps .step-title { font-weight: 700; margin-bottom: 6px; }
+
+      .bigcode {
+        background: var(--code-bg); color: var(--code-ink); border-radius: 12px;
+        font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600;
+        font-size: clamp(42px, 10vw, 60px); letter-spacing: 0.28em; text-align: center;
+        padding: 16px 10px 16px calc(10px + 0.28em); user-select: all;
+      }
+      .code-input {
+        font-family: "IBM Plex Mono", ui-monospace, monospace; font-weight: 600;
+        font-size: 24px; letter-spacing: 0.22em; text-transform: uppercase;
+        width: 200px; max-width: 100%; padding: 10px 14px; border-radius: 10px;
+        border: 1.5px solid var(--line); background: var(--panel); color: var(--ink);
+      }
+      .code-input::placeholder { color: var(--muted); opacity: 0.55; }
+      .code-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+      .err { color: var(--danger); font-size: 14px; font-weight: 600; margin-top: 8px; min-height: 1.2em; }
+      .ok-note { color: var(--accent-dark); font-size: 14px; font-weight: 600; margin-top: 8px; }
+      @media (prefers-color-scheme: dark) { .ok-note { color: var(--accent); } }
+
+      .btn {
+        appearance: none; cursor: pointer; font: inherit; font-weight: 700; font-size: 15px;
+        border-radius: 10px; padding: 11px 18px; border: 1.5px solid transparent;
+        background: var(--accent); color: #fff; transition: background 0.15s, transform 0.05s;
+        display: inline-flex; align-items: center; gap: 8px;
+      }
+      .btn:hover { background: var(--accent-dark); }
+      .btn:active { transform: translateY(1px); }
+      .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+      .btn.ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+      .btn.ghost:hover { background: var(--panel-2); }
+      .btn.small { padding: 8px 13px; font-size: 13.5px; border-radius: 8px; }
+      .btn svg { width: 16px; height: 16px; flex: none; }
+
+      /* ---------- Scoreboard + court ---------- */
+      .scoreboard {
+        display: flex; align-items: stretch; gap: 10px; margin-top: 18px;
+      }
+      .score-card {
+        flex: 1; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+        padding: 10px 14px; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); min-width: 0;
+      }
+      .score-card .dot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+      .score-card .who { min-width: 0; }
+      .score-card .name { font-weight: 800; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .score-card .keys { color: var(--muted); font-size: 12px; font-weight: 600; }
+      .score-card .num { margin-left: auto; font-size: 40px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+      .score-mid { display: grid; place-items: center; font-weight: 900; color: var(--muted); font-size: 14px; padding: 0 2px; }
+      .serving { font-size: 11px; font-weight: 800; color: var(--accent-dark); text-transform: uppercase; letter-spacing: 0.06em; }
+      @media (prefers-color-scheme: dark) { .serving { color: var(--accent); } }
+
+      .court-wrap {
+        position: relative; margin-top: 12px; border-radius: 18px; overflow: hidden;
+        background: #1d2620; box-shadow: var(--shadow); border: 1px solid var(--line);
+      }
+      canvas#court { display: block; width: 100%; touch-action: none; }
+      .court-msg {
+        position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+        padding: 20px; pointer-events: none;
+      }
+      .court-msg .big {
+        font-size: clamp(24px, 5.5vw, 44px); font-weight: 900; color: #fff;
+        text-shadow: 0 3px 18px rgba(0,0,0,0.55); letter-spacing: -0.01em; line-height: 1.15;
+      }
+      .court-msg .sub { color: rgba(255,255,255,0.85); font-weight: 600; margin-top: 8px; font-size: clamp(13px, 2.6vw, 16px); text-shadow: 0 2px 10px rgba(0,0,0,0.6); }
+
+      .court-bar {
+        display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+      }
+      .pill {
+        display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 700;
+        background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px;
+      }
+      .pill .pdot { width: 9px; height: 9px; border-radius: 50%; background: #b6beb6; flex: none; }
+      .pill.on .pdot { background: #2fbf71; box-shadow: 0 0 0 4px rgba(47,191,113,0.18); }
+      .pill.warn .pdot { background: #e8a13a; }
+      .pill.bad .pdot { background: #d64541; }
+      .court-bar .spacer { flex: 1; }
+      .hint { color: var(--muted); font-size: 13.5px; line-height: 1.55; margin-top: 12px; }
+      .hint kbd {
+        font-family: "IBM Plex Mono", monospace; font-size: 12px; background: var(--panel);
+        border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px;
+      }
+      select {
+        font: inherit; font-weight: 600; padding: 10px 12px; border-radius: 10px;
+        border: 1.5px solid var(--line); background: var(--panel); color: var(--ink);
+      }
+      @media (max-width: 480px) {
+        .score-card { padding: 8px 10px; gap: 8px; }
+        .score-card .num { font-size: 30px; }
+        .score-card .name { font-size: 14px; }
+        .score-card .keys { font-size: 11px; }
+      }
+      .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+      .fineprint { color: var(--muted); font-size: 13px; line-height: 1.6; margin-top: 18px; max-width: 75ch; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Tenis de mesa P2P</h1>
+      <p class="lead">Partidos de tenis de mesa entre dos navegadores conectados <strong>directo, sin cuentas y sin correos</strong>. Creas la partida y te sale un <strong>código corto de 4 caracteres</strong> (2 letras y 2 números). Se lo pasas a tu amigo por WhatsApp, lo escribe aquí y se conecta al momento: es el mismo código para los dos, sin códigos de vuelta. El partido va de navegador a navegador (WebRTC), por eso el lag es mínimo.</p>
+
+      <div class="tabs" role="tablist" aria-label="Modo de juego">
+        <button class="tab" role="tab" id="tab-online" aria-selected="true" data-mode="online">En línea con código</button>
+        <button class="tab" role="tab" id="tab-local" aria-selected="false" data-mode="local">2 en esta pantalla</button>
+        <button class="tab" role="tab" id="tab-bot" aria-selected="false" data-mode="bot">Contra la máquina</button>
+      </div>
+
+      <!-- ============ ONLINE PANEL ============ -->
+      <section class="panel" id="panel-online">
+        <h2>Jugar en línea</h2>
+        <p>Los dos necesitan internet y tener esta página abierta. Solo hace falta un código corto, el mismo para los dos.</p>
+        <div class="role-switch" role="group" aria-label="Tu papel en la partida">
+          <button class="role-btn" id="role-host" aria-pressed="true">Yo creo la partida</button>
+          <button class="role-btn" id="role-guest" aria-pressed="false">Me uno con un código</button>
+        </div>
+
+        <!-- HOST -->
+        <div id="host-flow">
+          <ol class="steps">
+            <li>
+              <div class="step-title">Crea la partida y copia tu código</div>
+              <button class="btn" id="btn-create">Crear partida y generar código</button>
+              <div id="host-code-box" class="hidden" style="margin-top:12px">
+                <div class="bigcode" id="host-code" aria-label="Tu código de partida"></div>
+                <div class="code-actions">
+                  <button class="btn ghost small" id="btn-copy-host">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+                    Copiar código
+                  </button>
+                  <span class="ok-note" id="host-copied"></span>
+                </div>
+              </div>
+              <div class="err" id="host-err"></div>
+            </li>
+            <li>
+              <div class="step-title">Mándalo a tu amigo y a esperar</div>
+              <p style="margin:0">Pásale el código por WhatsApp. En cuanto lo escriba en esta misma página, la conexión se abre sola y empieza el partido: no tienes que hacer nada más.</p>
+            </li>
+          </ol>
+        </div>
+
+        <!-- GUEST -->
+        <div id="guest-flow" class="hidden">
+          <ol class="steps">
+            <li>
+              <div class="step-title">Escribe el código que te enviaron</div>
+              <div class="row">
+                <input class="code-input" id="guest-code-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="8" placeholder="KA47" aria-label="Código de la partida" />
+                <button class="btn ghost small" id="btn-paste-code">Pegar desde el portapapeles</button>
+              </div>
+              <div class="err" id="guest-err"></div>
+            </li>
+            <li>
+              <div class="step-title">Únete y a jugar</div>
+              <button class="btn" id="btn-guest-join">Unirse y jugar</button>
+              <p style="margin:8px 0 0">Te conectas directo con tu amigo con ese mismo código: no hay código de vuelta.</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ============ LOCAL PANEL ============ -->
+      <section class="panel hidden" id="panel-local">
+        <h2>Dos jugadores en esta misma pantalla</h2>
+        <p>Sin internet ni códigos: cada uno mueve su raqueta desde su lado. En computadora, Jugador 1 usa <strong>W / S</strong> y Jugador 2 las <strong>flechas ↑ / ↓</strong>. En pantalla táctil, cada uno arrastra el dedo en su mitad de la mesa.</p>
+        <button class="btn" id="btn-start-local">Empezar partido</button>
+      </section>
+
+      <!-- ============ BOT PANEL ============ -->
+      <section class="panel hidden" id="panel-bot">
+        <h2>Contra la máquina</h2>
+        <p>Para practicar mientras llega tu rival. Mueves tu raqueta con el ratón, el dedo o las teclas <strong>W / S</strong> y <strong>↑ / ↓</strong>.</p>
+        <div class="row">
+          <label for="bot-level" style="font-weight:700">Nivel</label>
+          <select id="bot-level">
+            <option value="easy">Fácil</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Difícil</option>
+          </select>
+          <button class="btn" id="btn-start-bot">Empezar partido</button>
+        </div>
+      </section>
+
+      <!-- ============ SCOREBOARD ============ -->
+      <div class="scoreboard" aria-live="polite">
+        <div class="score-card">
+          <span class="dot" id="dot-p1" style="background:#d63c2f"></span>
+          <div class="who">
+            <div class="name" id="name-p1">Jugador 1</div>
+            <div class="keys" id="keys-p1">Raqueta roja</div>
+            <div class="serving hidden" id="serve-p1">Saque</div>
+          </div>
+          <div class="num" id="score-p1">0</div>
+        </div>
+        <div class="score-mid">—</div>
+        <div class="score-card">
+          <span class="dot" id="dot-p2" style="background:#23262b"></span>
+          <div class="who">
+            <div class="name" id="name-p2">Jugador 2</div>
+            <div class="keys" id="keys-p2">Raqueta negra</div>
+            <div class="serving hidden" id="serve-p2">Saque</div>
+          </div>
+          <div class="num" id="score-p2">0</div>
+        </div>
+      </div>
+
+      <!-- ============ COURT ============ -->
+      <div class="court-wrap" id="court-wrap">
+        <canvas id="court" width="1000" height="600" aria-label="Mesa de tenis de mesa"></canvas>
+        <div class="court-msg" id="court-msg">
+          <div>
+            <div class="big" id="court-msg-big">Elige un modo y empieza</div>
+            <div class="sub" id="court-msg-sub">Gana quien llegue a 11 puntos con 2 de ventaja.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="court-bar">
+        <span class="pill" id="status-pill"><span class="pdot"></span><span id="status-text">Sin partida</span></span>
+        <span class="pill hidden" id="ping-pill"><span id="ping-text">— ms</span></span>
+        <span class="spacer"></span>
+        <button class="btn ghost small hidden" id="btn-rematch">Revancha</button>
+        <button class="btn ghost small hidden" id="btn-stop">Terminar partida</button>
+        <button class="btn ghost small" id="btn-sound" aria-pressed="true">Sonido: sí</button>
+      </div>
+
+      <p class="hint" id="controls-hint">Controles: mueve la raqueta con el ratón o el dedo sobre la mesa, o con las teclas <kbd>W</kbd> <kbd>S</kbd> / <kbd>↑</kbd> <kbd>↓</kbd>. En el móvil puedes jugar en vertical u horizontal; en horizontal la mesa se ve más grande.</p>
+
+      <p class="fineprint">Cómo funciona la conexión: un servidor público y gratuito (la nube de PeerJS) sirve solo para que los dos navegadores se encuentren a partir del código; en cuanto se saludan, el partido va directo de navegador a navegador (WebRTC) y el servidor ya no interviene. Los códigos son cortos, así que si otra partida ya está usando el mismo código, la página genera otro automáticamente. Cuando la conexión directa entre los dos routers no es posible (pasa en redes con NAT estricta), la partida se apoya en un servidor repetidor gratuito para poder jugar igual. Si aun así no se abre, probad con los datos móviles o con otro Wi-Fi.</p>
+    </div>
+
+<script>
+"use strict";
+/* Carga de PeerJS con varias fuentes y reintentos. Antes la librería venía de
+   un único CDN: si esa carga fallaba o tardaba demasiado (pasa con algunos
+   Wi-Fi, navegadores dentro de WhatsApp y redes con proxy), el modo en línea
+   moría sin más. Ahora, si una fuente falla, se prueba la siguiente, y si
+   todas fallan se vuelve a intentar solo unos segundos después. */
+window.__peerLibState = "loading"; // loading | ready | failed
+(function () {
+  var SOURCES = [
+    "https://cdn.jsdelivr.net/npm/peerjs@1/dist/peerjs.min.js",
+    "https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js",
+    "https://fastly.jsdelivr.net/npm/peerjs@1/dist/peerjs.min.js",
+    "https://gcore.jsdelivr.net/npm/peerjs@1/dist/peerjs.min.js"
+  ];
+  var idx = 0, round = 0, timer = null;
+  function ok() { return typeof window.Peer !== "undefined"; }
+  function giveUpRound() {
+    if (ok()) { window.__peerLibState = "ready"; return; }
+    round++;
+    if (round > 4) { window.__peerLibState = "failed"; return; }
+    idx = 0;
+    timer = setTimeout(tryNext, 2500 * round); // reintento automático con pausa creciente
+  }
+  function tryNext() {
+    if (ok()) { window.__peerLibState = "ready"; return; }
+    if (idx >= SOURCES.length) { giveUpRound(); return; }
+    var src = SOURCES[idx++];
+    var s = document.createElement("script");
+    var settled = false;
+    var to = setTimeout(function () { if (!settled) { settled = true; tryNext(); } }, 9000);
+    s.src = src;
+    s.onload = function () {
+      clearTimeout(to);
+      if (ok()) { window.__peerLibState = "ready"; }
+      else if (!settled) { settled = true; tryNext(); }
+    };
+    s.onerror = function () { clearTimeout(to); if (!settled) { settled = true; tryNext(); } };
+    document.head.appendChild(s);
+  }
+  window.__retryPeerLib = function () {
+    if (ok()) { window.__peerLibState = "ready"; return; }
+    if (timer) { clearTimeout(timer); timer = null; }
+    round = 0; idx = 0; window.__peerLibState = "loading";
+    tryNext();
+  };
+  tryNext();
+})();
+</script>
+<script>
+"use strict";
+/* =====================================================================
+   Tenis de mesa P2P — WebRTC con señalización automática por PeerJS.
+   El anfitrión simula el partido (física autoritativa) y envía el estado
+   por un canal de datos rápido; el invitado envía la posición de su
+   raqueta y dibuja el estado recibido con interpolación.
+   ===================================================================== */
+
+/* ---------- Constantes de la mesa (unidades de cancha) ---------- */
+var L = 1000;          // largo de la mesa (eje de juego)
+var W = 600;           // ancho de la mesa
+var PADDLE_H = 84;     // alto útil de la raqueta
+var PADDLE_X = 30;     // distancia de la raqueta al borde
+var BALL_R = 11;
+var WIN_SCORE = 11;
+var BASE_SPEED = 520;
+var MAX_SPEED = 1180;
+
+/* ---------- Estado global ---------- */
+var mode = "online";        // 'online' | 'local' | 'bot'
+var role = null;            // 'host' | 'guest' (solo en línea)
+var soundOn = true;
+var audioCtx = null;
+
+var view = freshView();     // lo que se dibuja
+function freshView() {
+  return { bx: L/2, by: W/2, vx: 0, vy: 0, p1: W/2, p2: W/2, s1: 0, s2: 0,
+           phase: "idle", winner: 0, server: 1, flashSide: 0, flashUntil: 0 };
+}
+
+/* ---------- Motor (lo corre el anfitrión / modos locales) ---------- */
+var eng = null;
+function newEngine() {
+  return { bx: L/2, by: W/2, vx: 0, vy: 0, p1: W/2, p2: W/2,
+           p1t: W/2, p2t: W/2, s1: 0, s2: 0, phase: "idle", t: 0,
+           serveDir: 1, server: 1, winner: 0, speed: BASE_SPEED, lastScorer: 0 };
+}
+function resetMatch() {
+  eng = newEngine();
+  eng.server = Math.random() < 0.5 ? 1 : 2;
+  startPoint(eng.server === 1 ? 1 : -1, true);
+  syncViewFromEngine();
+}
+function startPoint(dir, first) {
+  eng.bx = L/2; eng.by = W/2; eng.vx = 0; eng.vy = 0;
+  eng.speed = BASE_SPEED;
+  eng.phase = "serve"; eng.t = first ? 1.4 : 1.0;
+  eng.serveDir = dir;
+  // El saque rota cada 2 puntos (cada 1 en la prórroga a partir de 10-10)
+  var total = eng.s1 + eng.s2;
+  var every = (eng.s1 >= 10 && eng.s2 >= 10) ? 1 : 2;
+  if (!first && total > 0 && total % every === 0) eng.server = eng.server === 1 ? 2 : 1;
+}
+function launchBall() {
+  var ang = (Math.random() * 0.62 - 0.31); // ±18°
+  eng.vx = eng.serveDir * eng.speed * Math.cos(ang);
+  eng.vy = eng.speed * Math.sin(ang);
+  eng.phase = "play";
+}
+function scorePoint(scorer) {
+  if (scorer === 1) eng.s1++; else eng.s2++;
+  eng.lastScorer = scorer;
+  view.flashSide = scorer; view.flashUntil = performance.now() + 750;
+  playScore();
+  var s = scorer === 1 ? eng.s1 : eng.s2;
+  var o = scorer === 1 ? eng.s2 : eng.s1;
+  if (s >= WIN_SCORE && s - o >= 2) {
+    eng.phase = "over"; eng.winner = scorer;
+  } else {
+    startPoint(scorer === 1 ? -1 : 1, false); // saca hacia quien perdió el punto
+  }
+  syncViewFromEngine();
+  updateMatchUI();
+}
+function movePaddle(cur, target, maxStep) {
+  var d = target - cur;
+  if (Math.abs(d) <= maxStep) return target;
+  return cur + Math.sign(d) * maxStep;
+}
+function engineUpdate(dt) {
+  if (!eng) return;
+  // Movimiento de raquetas hacia su objetivo
+  var stepKbd = 2600 * dt;
+  eng.p1 = clamp(movePaddle(eng.p1, eng.p1t, stepKbd), PADDLE_H/2, W - PADDLE_H/2);
+  eng.p2 = clamp(movePaddle(eng.p2, eng.p2t, stepKbd), PADDLE_H/2, W - PADDLE_H/2);
+
+  if (eng.phase === "serve") {
+    eng.t -= dt;
+    eng.bx = L/2; eng.by = W/2 + Math.sin(performance.now() / 280) * 6;
+    if (eng.t <= 0) launchBall();
+  } else if (eng.phase === "play") {
+    var prevX = eng.bx;
+    eng.bx += eng.vx * dt;
+    eng.by += eng.vy * dt;
+    // Paredes superior e inferior
+    if (eng.by < BALL_R) { eng.by = BALL_R; eng.vy = Math.abs(eng.vy); playWall(); }
+    if (eng.by > W - BALL_R) { eng.by = W - BALL_R; eng.vy = -Math.abs(eng.vy); playWall(); }
+    // Raqueta izquierda (Jugador 1)
+    var plane1 = PADDLE_X + 14;
+    if (eng.vx < 0 && prevX - BALL_R >= plane1 && eng.bx - BALL_R < plane1) {
+      if (Math.abs(eng.by - eng.p1) <= PADDLE_H/2 + BALL_R * 0.55) {
+        bounceOff(1);
+      }
+    }
+    // Raqueta derecha (Jugador 2)
+    var plane2 = L - PADDLE_X - 14;
+    if (eng.vx > 0 && prevX + BALL_R <= plane2 && eng.bx + BALL_R > plane2) {
+      if (Math.abs(eng.by - eng.p2) <= PADDLE_H/2 + BALL_R * 0.55) {
+        bounceOff(-1);
+      }
+    }
+    // Puntos
+    if (eng.bx < -24) scorePoint(2);
+    else if (eng.bx > L + 24) scorePoint(1);
+  }
+  syncViewFromEngine();
+}
+function bounceOff(dir) {
+  var paddleY = dir === 1 ? eng.p1 : eng.p2;
+  var off = clamp((eng.by - paddleY) / (PADDLE_H/2), -1, 1);
+  eng.speed = Math.min(MAX_SPEED, eng.speed * 1.045 + 6);
+  var ang = off * 1.05; // hasta ~60°
+  eng.vx = dir * eng.speed * Math.cos(ang);
+  eng.vy = eng.speed * Math.sin(ang);
+  eng.bx = dir === 1 ? PADDLE_X + 14 + BALL_R + 0.5 : L - PADDLE_X - 14 - BALL_R - 0.5;
+  playHit();
+}
+function syncViewFromEngine() {
+  if (!eng) return;
+  view.bx = eng.bx; view.by = eng.by; view.vx = eng.vx; view.vy = eng.vy;
+  view.p1 = eng.p1; view.p2 = eng.p2; view.s1 = eng.s1; view.s2 = eng.s2;
+  view.phase = eng.phase; view.winner = eng.winner; view.server = eng.server;
+}
+function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+
+/* ---------- Bot ---------- */
+var botCfg = { easy: { speed: 400, react: 170 }, normal: { speed: 560, react: 110 }, hard: { speed: 760, react: 55 } };
+var botTimer = 0, botTarget = W/2;
+function botUpdate(dt) {
+  if (!eng) return;
+  var cfg = botCfg[document.getElementById("bot-level").value] || botCfg.normal;
+  botTimer -= dt * 1000;
+  if (botTimer <= 0) {
+    botTimer = cfg.react;
+    if (eng.phase === "play" && eng.vx > 0) {
+      // Predice dónde cruzará la pelota el plano de la raqueta
+      var t = (L - PADDLE_X - 14 - eng.bx) / eng.vx;
+      var y = eng.by + eng.vy * t;
+      // Reflejos en las paredes
+      var period = 2 * (W - 2 * BALL_R);
+      y = ((y - BALL_R) % period + period) % period;
+      if (y > W - 2 * BALL_R) y = period - y;
+      botTarget = y + BALL_R + (Math.random() * 26 - 13);
+    } else {
+      botTarget = W/2 + Math.sin(performance.now() / 900) * 40;
+    }
+  }
+  var step = cfg.speed * dt;
+  eng.p2t = clamp(movePaddle(eng.p2t, botTarget, step), PADDLE_H/2, W - PADDLE_H/2);
+  // El motor mueve p2 hacia p2t casi al instante; la velocidad real del bot es cfg.speed
+}
+
+/* =====================================================================
+   Conexión en línea con PeerJS (nube pública gratuita 0.peerjs.com).
+   El código corto (2 letras + 2 números) es el ID del anfitrión con un
+   prefijo fijo; el servidor solo presenta a los dos navegadores y el
+   partido va directo entre ellos por WebRTC.
+   ===================================================================== */
+var PEER_PREFIX = "tenisdemesa-p2p-";
+/* Servidores ICE explícitos. Sin TURN, dos jugadores detrás de routers con
+   NAT estricta (muy común en Wi-Fi domésticos y datos móviles) se presentaban
+   bien pero la conexión directa nunca se abría y el partido no empezaba.
+   El TURN gratuito de PeerJS retransmite en esos casos. */
+var PEER_OPTS = {
+  debug: 0,
+  config: {
+    iceServers: [
+      { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"] },
+      { urls: "turn:0.peerjs.com:3478", username: "peerjs", credential: "peerjsp" },
+      { urls: "turn:0.peerjs.com:3478?transport=tcp", username: "peerjs", credential: "peerjsp" }
+    ],
+    iceCandidatePoolSize: 4
+  }
+};
+var peer = null, dcFast = null, dcCtl = null;
+var hostCode = "";
+var guestTargetY = W/2;                 // objetivo de la raqueta del invitado (en el anfitrión)
+var snapshots = [];                     // historial de estados (en el invitado)
+var guestOwnY = W/2, guestOwnTarget = W/2; // raqueta propia del invitado (respuesta inmediata)
+var pingTimer = null, lastSnapSent = 0;
+var matchLive = false;
+var stickyMsg = null;   // mensaje fijo (p. ej. conexión perdida) que el bucle no debe tapar
+
+function chanOpen(c) { return !!(c && c.open); }
+function peerLoaded() { return typeof window.Peer !== "undefined"; }
+/* Espera a que la librería de conexión esté lista (se carga con reintentos
+   desde varias fuentes). Devuelve true si quedó lista; si no, avisa una vez
+   en errEl. Así un toque temprano o una carga lenta ya no mata la partida. */
+function waitPeerLib(errEl, cb) {
+  if (peerLoaded()) { cb(true); return; }
+  if (window.__peerLibState === "failed" && window.__retryPeerLib) window.__retryPeerLib();
+  var waited = 0;
+  var iv = setInterval(function () {
+    if (peerLoaded()) { clearInterval(iv); cb(true); return; }
+    waited += 250;
+    if (waited >= 15000) {
+      clearInterval(iv);
+      errEl.textContent = "El servicio de conexión tardó demasiado en cargar. Revisa tu internet y pulsa el botón otra vez: la página lo sigue intentando sola.";
+      cb(false);
+    }
+  }, 250);
+}
+function genCode() {
+  var letters = "ABCDEFGHJKMNPQRSTUVWXYZ"; // sin I ni O: no se confunden con 1 y 0
+  function pick(s) { return s.charAt(Math.floor(Math.random() * s.length)); }
+  return pick(letters) + pick(letters) + Math.floor(Math.random() * 10) + Math.floor(Math.random() * 10);
+}
+function normalizeCode(s) { return (s || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+function validCode(s) { return /^[A-Z]{2}[0-9]{2}$/.test(s); }
+
+function wireConnState(conn) {
+  conn.on("iceStateChanged", function (st) {
+    if (st === "connected" || st === "completed") {
+      setStatus("on", role === "host" ? "Conectado con tu rival" : "Conectado con el anfitrión");
+      startPing();
+      var jb = document.getElementById("btn-guest-join");
+      if (jb) { jb.disabled = false; jb.textContent = "Unirse y jugar"; }
+    } else if (st === "disconnected") {
+      setStatus("bad", "Conexión perdida");
+      if (matchLive) stickyMsg = { big: "Se perdió la conexión", sub: "Cread una partida nueva para volver a jugar." };
+    } else if (st === "failed") {
+      setStatus("bad", "La conexión falló");
+      if (matchLive) stickyMsg = { big: "La conexión falló", sub: "Algunas redes bloquean la conexión directa: probad con otro Wi-Fi o datos móviles." };
+    }
+  });
+  conn.on("close", function () {
+    if (matchLive) {
+      setStatus("bad", "Conexión perdida");
+      stickyMsg = { big: "Se perdió la conexión", sub: "Cread una partida nueva para volver a jugar." };
+    }
+  });
+}
+function wireChannel(conn) {
+  if (!conn || conn._tmWired) return;
+  conn._tmWired = true;
+  if (conn.label === "ctl") {
+    conn.on("open", function () {
+      if (role === "host") sendStart();
+    });
+    conn.on("data", function (data) {
+      var m; try { m = JSON.parse(data); } catch (e) { return; }
+      if (m.k === "start" && role === "guest") beginGuestMatch();
+      else if (m.k === "ping") { try { dcCtl.send(JSON.stringify({ k: "pong", t: m.t })); } catch (e) {} }
+      else if (m.k === "pong") {
+        var rtt = Math.round(performance.now() - m.t);
+        document.getElementById("ping-text").textContent = rtt + " ms";
+        document.getElementById("ping-pill").classList.remove("hidden");
+      }
+    });
+  } else if (conn.label === "fast") {
+    conn.on("data", function (data) {
+      var m; try { m = JSON.parse(data); } catch (e) { return; }
+      if (role === "host" && m.k === "i") {
+        guestTargetY = clamp(m.y, PADDLE_H/2, W - PADDLE_H/2);
+        if (eng) eng.p2t = guestTargetY;
+      } else if (role === "guest" && m.k === "s") {
+        snapshots.push({ t: performance.now(), bx: m.bx, by: m.by, vx: m.vx, vy: m.vy,
+                         p1: m.p1, p2: m.p2, s1: m.s1, s2: m.s2, ph: m.ph, w: m.w, sv: m.sv });
+        if (snapshots.length > 40) snapshots.splice(0, snapshots.length - 40);
+        // Flash de punto al detectar cambio de marcador
+        if (m.s1 + m.s2 !== view.s1 + view.s2 && matchLive) {
+          view.flashSide = m.s1 > view.s1 ? 1 : 2;
+          view.flashUntil = performance.now() + 750;
+          playScore();
+        }
+        view.s1 = m.s1; view.s2 = m.s2; view.winner = m.w; view.server = m.sv;
+      }
+    });
+  }
+}
+function startPing() {
+  stopPing();
+  pingTimer = setInterval(function () {
+    if (chanOpen(dcCtl)) {
+      try { dcCtl.send(JSON.stringify({ k: "ping", t: performance.now() })); } catch (e) {}
+    }
+  }, 2000);
+}
+function stopPing() { if (pingTimer) { clearInterval(pingTimer); pingTimer = null; } }
+
+function sendStart() {
+  // El anfitrión (re)inicia el partido y avisa al invitado
+  resetMatch();
+  matchLive = true;
+  stickyMsg = null;
+  updateMatchUI();
+  hideCourtMsg();
+  if (chanOpen(dcCtl)) {
+    try { dcCtl.send(JSON.stringify({ k: "start" })); } catch (e) {}
+  }
+}
+function beginGuestMatch() {
+  view = freshView();
+  snapshots = [];
+  guestOwnY = W/2; guestOwnTarget = W/2;
+  matchLive = true;
+  stickyMsg = null;
+  view.phase = "serve";
+  updateMatchUI();
+  hideCourtMsg();
+}
+function teardownPeer() {
+  stopPing();
+  [dcFast, dcCtl].forEach(function (c) { try { if (c) c.close(); } catch (e) {} });
+  dcFast = dcCtl = null;
+  if (peer) { try { peer.destroy(); } catch (e) {} peer = null; }
+  snapshots = [];
+  document.getElementById("ping-pill").classList.add("hidden");
+}
+
+/* ---------- Flujo del anfitrión ---------- */
+function hostCreate(btn) {
+  var err = document.getElementById("host-err");
+  err.textContent = "";
+  teardownPeer();
+  role = "host"; mode = "online";
+  btn.disabled = true; btn.textContent = "Generando código…";
+  // Si la librería aún viene en camino, se espera en vez de fallar al instante
+  waitPeerLib(err, function (okLib) {
+    if (!okLib) { btn.disabled = false; btn.textContent = "Crear partida y generar código"; return; }
+    hostTryCreate(btn, 0, 0);
+  });
+}
+function hostTryCreate(btn, attempt, netTries) {
+  hostCode = genCode();
+  var p = new Peer(PEER_PREFIX + hostCode.toLowerCase(), PEER_OPTS);
+  peer = p;
+  var opened = false;
+  var openTimer = setTimeout(function () {
+    // El servidor de encuentro no respondió a tiempo: se reintenta solo
+    if (p !== peer || opened) return;
+    try { p.destroy(); } catch (e) {}
+    if (netTries < 2) hostTryCreate(btn, attempt, netTries + 1);
+    else {
+      document.getElementById("host-err").textContent = "El servidor de conexión no responde. Revisa tu internet y pulsa el botón otra vez.";
+      btn.disabled = false; btn.textContent = "Crear partida y generar código";
+    }
+  }, 12000);
+  p.on("open", function () {
+    if (p !== peer) return;
+    opened = true;
+    clearTimeout(openTimer);
+    document.getElementById("host-code").textContent = hostCode;
+    document.getElementById("host-code-box").classList.remove("hidden");
+    setStatus("warn", "Código listo: pásalo a tu amigo y espera a que se una");
+    btn.disabled = false; btn.textContent = "Crear partida y generar código";
+  });
+  p.on("connection", function (conn) {
+    if (p !== peer) { try { conn.close(); } catch (e) {} return; }
+    if (conn.label === "fast") dcFast = conn;
+    else if (conn.label === "ctl") { dcCtl = conn; wireConnState(conn); }
+    else return;
+    wireChannel(conn);
+  });
+  p.on("disconnected", function () { try { p.reconnect(); } catch (e) {} });
+  p.on("error", function (e) {
+    if (p !== peer) return;
+    if (e.type === "unavailable-id" && !opened) {
+      // Ese código ya lo está usando otra partida: se genera otro automáticamente
+      clearTimeout(openTimer);
+      try { p.destroy(); } catch (e2) {}
+      if (attempt < 10) hostTryCreate(btn, attempt + 1, netTries);
+      else {
+        document.getElementById("host-err").textContent = "No se encontró un código libre. Pulsa el botón otra vez.";
+        btn.disabled = false; btn.textContent = "Crear partida y generar código";
+      }
+    } else if (!opened) {
+      clearTimeout(openTimer);
+      if ((e.type === "network" || e.type === "server-error" || e.type === "socket-error" || e.type === "socket-closed") && netTries < 2) {
+        try { p.destroy(); } catch (e2) {}
+        hostTryCreate(btn, attempt, netTries + 1);
+        return;
+      }
+      document.getElementById("host-err").textContent = "No se pudo crear la partida. Revisa tu internet e inténtalo otra vez.";
+      btn.disabled = false; btn.textContent = "Crear partida y generar código";
+    }
+  });
+}
+
+/* ---------- Flujo del invitado ---------- */
+function guestJoin(btn) {
+  var err = document.getElementById("guest-err");
+  err.textContent = "";
+  var code = normalizeCode(document.getElementById("guest-code-input").value);
+  document.getElementById("guest-code-input").value = code;
+  if (!validCode(code)) { err.textContent = "El código son 2 letras y 2 números (ejemplo: KA47). Revisa el que te enviaron."; return; }
+  teardownPeer();
+  role = "guest"; mode = "online";
+  btn.disabled = true; btn.textContent = "Conectando…";
+  setStatus("warn", "Buscando la partida " + code + "…");
+  waitPeerLib(err, function (okLib) {
+    if (!okLib) { btn.disabled = false; btn.textContent = "Unirse y jugar"; return; }
+    guestTryJoin(btn, code, 0);
+  });
+}
+function guestTryJoin(btn, code, netTries) {
+  var err = document.getElementById("guest-err");
+  var p = new Peer(undefined, PEER_OPTS);
+  peer = p;
+  var failed = false, opened = false;
+  var openTimer = setTimeout(function () {
+    // El servidor de encuentro no respondió a tiempo: se reintenta solo
+    if (p !== peer || opened || failed) return;
+    try { p.destroy(); } catch (e) {}
+    if (netTries < 2) guestTryJoin(btn, code, netTries + 1);
+    else {
+      err.textContent = "El servidor de conexión no responde. Revisa tu internet y pulsa «Unirse y jugar» otra vez.";
+      btn.disabled = false; btn.textContent = "Unirse y jugar";
+    }
+  }, 12000);
+  p.on("open", function () {
+    if (p !== peer) return;
+    opened = true;
+    clearTimeout(openTimer);
+    dcFast = p.connect(PEER_PREFIX + code.toLowerCase(), { label: "fast", reliable: false });
+    dcCtl = p.connect(PEER_PREFIX + code.toLowerCase(), { label: "ctl", reliable: true });
+    wireChannel(dcFast); wireChannel(dcCtl); wireConnState(dcCtl);
+    setTimeout(function () {
+      if (p === peer && !matchLive && !failed) {
+        err.textContent = "La partida no responde. Comprueba que tu amigo tenga la partida creada y esta página abierta, y que el código sea el suyo.";
+        btn.disabled = false; btn.textContent = "Unirse y jugar";
+      }
+    }, 25000);
+  });
+  p.on("error", function (e) {
+    if (p !== peer) return;
+    if (e.type === "peer-unavailable") {
+      failed = true;
+      clearTimeout(openTimer);
+      err.textContent = "No hay ninguna partida con el código " + code + ". Comprueba que tu amigo la haya creado y que hayas copiado bien el código.";
+      setStatus("bad", "Partida no encontrada");
+      btn.disabled = false; btn.textContent = "Unirse y jugar";
+    } else if (!opened && (e.type === "network" || e.type === "server-error" || e.type === "socket-error" || e.type === "socket-closed") && netTries < 2) {
+      failed = true;
+      clearTimeout(openTimer);
+      try { p.destroy(); } catch (e2) {}
+      guestTryJoin(btn, code, netTries + 1);
+    } else if (!matchLive) {
+      failed = true;
+      clearTimeout(openTimer);
+      err.textContent = "No se pudo contactar el servidor de conexión. Revisa tu internet e inténtalo otra vez.";
+      btn.disabled = false; btn.textContent = "Unirse y jugar";
+    }
+  });
+}
+
+/* ---------- Interpolación del invitado ---------- */
+function guestRenderUpdate(now) {
+  if (!snapshots.length) return;
+  var rt = now - 70; // pequeño búfer para interpolar entre dos estados reales
+  var a = null, b = null;
+  for (var i = snapshots.length - 1; i >= 0; i--) {
+    if (snapshots[i].t <= rt) { a = snapshots[i]; b = snapshots[i + 1] || null; break; }
+  }
+  if (!a) { a = snapshots[0]; b = snapshots[1] || null; }
+  if (a && b) {
+    var span = Math.max(1, b.t - a.t);
+    var f = clamp((rt - a.t) / span, 0, 1);
+    view.bx = a.bx + (b.bx - a.bx) * f;
+    view.by = a.by + (b.by - a.by) * f;
+    view.p1 = a.p1 + (b.p1 - a.p1) * f;
+    view.phase = b.ph;
+  } else if (a) {
+    view.bx = a.bx; view.by = a.by; view.p1 = a.p1; view.phase = a.ph;
+    // Extrapolación corta si no llega nada nuevo
+    var dt = Math.min(0.1, (now - a.t) / 1000);
+    view.bx += a.vx * dt; view.by += a.vy * dt;
+  }
+  // La raqueta propia se dibuja desde la entrada local (sin esperar red)
+  guestOwnY = movePaddle(guestOwnY, guestOwnTarget, 3000 * (1/60));
+  view.p2 = guestOwnY;
+}
+
+/* =====================================================================
+   Entrada: teclado, ratón y tacto
+   ===================================================================== */
+var keys = {};
+var pointers = new Map(); // pointerId -> { side: 1|2, y: courtY }
+var mouseY = null;        // última posición del ratón en coords de cancha (lado local)
+
+document.addEventListener("keydown", function (e) {
+  keys[e.key.toLowerCase()] = true;
+  if (["arrowup", "arrowdown", " "].indexOf(e.key.toLowerCase()) >= 0 && matchLive) e.preventDefault();
+});
+document.addEventListener("keyup", function (e) { keys[e.key.toLowerCase()] = false; });
+
+function localSide() { return role === "guest" ? 2 : 1; }
+
+function applyInputs(dt) {
+  if (!matchLive) return;
+  var speed = 660 * dt;
+  // Teclado del jugador local
+  var up = keys["w"] || keys["arrowup"], down = keys["s"] || keys["arrowdown"];
+  if (mode === "online" && role === "guest") {
+    if (up) guestOwnTarget -= speed * 1.6;
+    if (down) guestOwnTarget += speed * 1.6;
+    guestOwnTarget = clamp(guestOwnTarget, PADDLE_H/2, W - PADDLE_H/2);
+    // Enviar al anfitrión
+    if (chanOpen(dcFast)) {
+      try { dcFast.send(JSON.stringify({ k: "i", y: Math.round(guestOwnTarget) })); } catch (e) {}
+    }
+    return;
+  }
+  if (!eng) return;
+  if (mode === "local") {
+    if (keys["w"]) eng.p1t -= speed * 1.6;
+    if (keys["s"]) eng.p1t += speed * 1.6;
+    if (keys["arrowup"]) eng.p2t -= speed * 1.6;
+    if (keys["arrowdown"]) eng.p2t += speed * 1.6;
+  } else {
+    // anfitrión en línea o contra la máquina: el local es el Jugador 1
+    if (up) eng.p1t -= speed * 1.6;
+    if (down) eng.p1t += speed * 1.6;
+  }
+  // Punteros / ratón
+  pointers.forEach(function (p) {
+    if (mode === "local") { if (p.side === 1) eng.p1t = p.y; else eng.p2t = p.y; }
+    else if (p.side === localSide()) { if (role === "guest") guestOwnTarget = p.y; else eng.p1t = p.y; }
+  });
+  if (mouseY !== null && pointers.size === 0) {
+    if (mode !== "local") { if (role === "guest") guestOwnTarget = mouseY; else if (eng) eng.p1t = mouseY; }
+    else if (eng) eng.p1t = mouseY;
+  }
+  if (eng) {
+    eng.p1t = clamp(eng.p1t, PADDLE_H/2, W - PADDLE_H/2);
+    eng.p2t = clamp(eng.p2t, PADDLE_H/2, W - PADDLE_H/2);
+  }
+}
+
+/* =====================================================================
+   Dibujo de la mesa
+   ===================================================================== */
+var canvas = document.getElementById("court");
+var ctx = canvas.getContext("2d");
+var lay = { s: 1, ox: 0, oy: 0, portrait: false, w: 1000, h: 600 };
+function mirrorView() { return mode === "online" && role === "guest"; }
+
+function layout() {
+  var wrapEl = document.getElementById("court-wrap");
+  var wCss = wrapEl.clientWidth;
+  var portrait = wCss < 620;
+  var hCss = Math.round(wCss * (portrait ? 1.26 : 0.60));
+  var dpr = window.devicePixelRatio || 1;
+  canvas.style.height = hCss + "px";
+  if (canvas.width !== Math.round(wCss * dpr) || canvas.height !== Math.round(hCss * dpr)) {
+    canvas.width = Math.round(wCss * dpr);
+    canvas.height = Math.round(hCss * dpr);
+  }
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  var m = 14;
+  var s = portrait ? Math.min((wCss - 2 * m) / W, (hCss - 2 * m) / L)
+                   : Math.min((wCss - 2 * m) / L, (hCss - 2 * m) / W);
+  var cw = (portrait ? W : L) * s, ch = (portrait ? L : W) * s;
+  lay = { s: s, ox: (wCss - cw) / 2, oy: (hCss - ch) / 2, portrait: portrait, w: wCss, h: hCss };
+}
+function toScreen(x, y) {
+  var s = lay.s, mir = mirrorView();
+  if (!lay.portrait) {
+    return mir ? [lay.ox + (L - x) * s, lay.oy + (W - y) * s]
+               : [lay.ox + x * s, lay.oy + y * s];
+  }
+  return mir ? [lay.ox + (W - y) * s, lay.oy + x * s]
+             : [lay.ox + y * s, lay.oy + (L - x) * s];
+}
+function pointerCourtY(clientX, clientY) {
+  var r = canvas.getBoundingClientRect();
+  var px = clientX - r.left, py = clientY - r.top;
+  var mir = mirrorView();
+  if (!lay.portrait) return clamp(mir ? W - (py - lay.oy) / lay.s : (py - lay.oy) / lay.s, 0, W);
+  return clamp(mir ? W - (px - lay.ox) / lay.s : (px - lay.ox) / lay.s, 0, W);
+}
+function pointerSide(clientX, clientY) {
+  var r = canvas.getBoundingClientRect();
+  if (lay.portrait) return (clientY - r.top) > r.height / 2 ? 1 : 2;
+  return (clientX - r.left) < r.width / 2 ? 1 : 2;
+}
+
+canvas.addEventListener("pointerdown", function (e) {
+  ensureAudio();
+  canvas.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId, { side: mode === "local" ? pointerSide(e.clientX, e.clientY) : localSide(), y: pointerCourtY(e.clientX, e.clientY) });
+});
+canvas.addEventListener("pointermove", function (e) {
+  var y = pointerCourtY(e.clientX, e.clientY);
+  if (pointers.has(e.pointerId)) pointers.get(e.pointerId).y = y;
+  else if (e.pointerType === "mouse") mouseY = y;
+});
+function endPointer(e) { pointers.delete(e.pointerId); }
+canvas.addEventListener("pointerup", endPointer);
+canvas.addEventListener("pointercancel", endPointer);
+
+function drawCourt(now) {
+  layout();
+  var w = lay.w, h = lay.h;
+  ctx.fillStyle = "#1d2620";
+  ctx.fillRect(0, 0, w, h);
+  var a = toScreen(0, 0), b = toScreen(L, W);
+  var rx = Math.min(a[0], b[0]), ry = Math.min(a[1], b[1]);
+  var rw = Math.abs(b[0] - a[0]), rh = Math.abs(b[1] - a[1]);
+  // Mesa
+  ctx.fillStyle = "#0d7a48";
+  roundRect(rx, ry, rw, rh, 10); ctx.fill();
+  ctx.fillStyle = "rgba(0,0,0,0.10)";
+  roundRect(rx, ry, rw, rh * 0.5, 10); ctx.fill();
+  // Borde blanco
+  ctx.strokeStyle = "#f4f1e6"; ctx.lineWidth = 3;
+  roundRect(rx + 8, ry + 8, rw - 16, rh - 16, 6); ctx.stroke();
+  // Línea central de dobles (tenue)
+  var d1 = toScreen(0, W/2), d2 = toScreen(L, W/2);
+  ctx.strokeStyle = "rgba(244,241,230,0.35)"; ctx.lineWidth = 2;
+  ctx.setLineDash([8, 8]);
+  ctx.beginPath(); ctx.moveTo(d1[0], d1[1]); ctx.lineTo(d2[0], d2[1]); ctx.stroke();
+  ctx.setLineDash([]);
+  // Red
+  var n1 = toScreen(L/2, -14), n2 = toScreen(L/2, W + 14);
+  ctx.strokeStyle = "rgba(10,20,14,0.55)"; ctx.lineWidth = 9;
+  ctx.beginPath(); ctx.moveTo(n1[0], n1[1]); ctx.lineTo(n2[0], n2[1]); ctx.stroke();
+  ctx.strokeStyle = "#f4f1e6"; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(n1[0], n1[1]); ctx.lineTo(n2[0], n2[1]); ctx.stroke();
+  [toScreen(L/2, -14), toScreen(L/2, W + 14)].forEach(function (p) {
+    ctx.fillStyle = "#30363b"; ctx.beginPath(); ctx.arc(p[0], p[1], 5, 0, 7); ctx.fill();
+  });
+
+  // Raquetas
+  drawRacket(PADDLE_X + 7, view.p1, "#d63c2f", -1);
+  drawRacket(L - PADDLE_X - 7, view.p2, "#23262b", 1);
+
+  // Pelota (con sombra)
+  var bp = toScreen(view.bx, view.by);
+  ctx.fillStyle = "rgba(0,0,0,0.28)";
+  ctx.beginPath(); ctx.ellipse(bp[0] + 4, bp[1] + 6, BALL_R * lay.s * 0.95, BALL_R * lay.s * 0.6, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = "#fff6e8";
+  ctx.beginPath(); ctx.arc(bp[0], bp[1], BALL_R * lay.s, 0, 7); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.9)";
+  ctx.beginPath(); ctx.arc(bp[0] - BALL_R * lay.s * 0.3, bp[1] - BALL_R * lay.s * 0.3, BALL_R * lay.s * 0.32, 0, 7); ctx.fill();
+
+  // Flash de punto
+  if (now < view.flashUntil && matchLive) {
+    var alpha = Math.min(1, (view.flashUntil - now) / 400);
+    ctx.fillStyle = "rgba(255,255,255," + (0.92 * alpha) + ")";
+    ctx.font = "900 " + Math.round(44 * Math.min(1.4, lay.s + 0.35)) + "px Archivo, sans-serif";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0,0,0,0.45)"; ctx.shadowBlur = 16;
+    var scorerIsLocal = (mode !== "online") ? view.flashSide === 1 : (view.flashSide === localSide());
+    ctx.fillText(scorerIsLocal || mode === "local" ? "¡Punto!" : "Punto del rival", w / 2, h / 2 - 46);
+    ctx.shadowBlur = 0;
+  }
+}
+function drawRacket(cx, cy, color, handleDir) {
+  var c = toScreen(cx, cy);
+  var tip = toScreen(cx + handleDir * 44, cy);
+  var r = 34 * lay.s;
+  // Mango
+  ctx.strokeStyle = "#c89b6a"; ctx.lineWidth = Math.max(5, 13 * lay.s); ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(c[0], c[1]); ctx.lineTo(tip[0], tip[1]); ctx.stroke();
+  // Aro de madera
+  ctx.fillStyle = "#a97c50";
+  ctx.beginPath(); ctx.arc(c[0], c[1], r + 3.5 * lay.s, 0, 7); ctx.fill();
+  // Cara
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(c[0], c[1], r, 0, 7); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.13)";
+  ctx.beginPath(); ctx.arc(c[0] - r * 0.25, c[1] - r * 0.25, r * 0.55, 0, 7); ctx.fill();
+}
+function roundRect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/* =====================================================================
+   Sonido (WebAudio, sin archivos)
+   ===================================================================== */
+function ensureAudio() {
+  if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+}
+function blip(freq, dur, type, gain) {
+  if (!soundOn || !audioCtx) return;
+  try {
+    var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = type || "square"; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain || 0.05, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch (e) {}
+}
+function playHit() { blip(240, 0.07, "square", 0.06); }
+function playWall() { blip(170, 0.05, "square", 0.035); }
+function playScore() { blip(520, 0.09, "triangle", 0.07); setTimeout(function () { blip(760, 0.13, "triangle", 0.07); }, 85); }
+
+/* =====================================================================
+   Bucle principal
+   ===================================================================== */
+var lastT = performance.now();
+function loop(now) {
+  var dt = Math.min(0.033, (now - lastT) / 1000);
+  lastT = now;
+  applyInputs(dt);
+  if (mode === "bot" && matchLive && eng) botUpdate(dt);
+  if (matchLive && eng && (mode !== "online" || role === "host")) {
+    engineUpdate(dt);
+    if (mode === "online" && role === "host" && chanOpen(dcFast) && now - lastSnapSent >= 33) {
+      lastSnapSent = now;
+      try {
+        dcFast.send(JSON.stringify({ k: "s", bx: Math.round(view.bx), by: Math.round(view.by),
+          vx: Math.round(view.vx), vy: Math.round(view.vy),
+          p1: Math.round(view.p1), p2: Math.round(view.p2),
+          s1: view.s1, s2: view.s2, ph: view.phase, w: view.winner, sv: view.server }));
+      } catch (e) {}
+    }
+  }
+  if (mode === "online" && role === "guest" && matchLive) guestRenderUpdate(now);
+  drawCourt(now);
+  refreshScoreboard();
+  refreshOverlay(now);
+  requestAnimationFrame(loop);
+}
+
+/* =====================================================================
+   Interfaz: marcador, mensajes, modos
+   ===================================================================== */
+var el = function (id) { return document.getElementById(id); };
+var lastScoreShown = "";
+function refreshScoreboard() {
+  var key = view.s1 + "-" + view.s2 + "-" + view.server + "-" + view.phase;
+  if (key === lastScoreShown) return;
+  lastScoreShown = key;
+  // En línea, cada jugador ve su marcador primero (izquierda)
+  var swap = mode === "online" && role === "guest";
+  el("score-p1").textContent = swap ? view.s2 : view.s1;
+  el("score-p2").textContent = swap ? view.s1 : view.s2;
+  el("serve-p1").classList.toggle("hidden", !(view.phase !== "over" && matchLive && (swap ? view.server === 2 : view.server === 1)));
+  el("serve-p2").classList.toggle("hidden", !(view.phase !== "over" && matchLive && (swap ? view.server === 1 : view.server === 2)));
+}
+function updateLabels() {
+  if (mode === "online" && role === "guest") {
+    el("name-p1").textContent = "Tú";
+    el("keys-p1").textContent = "Invitado · raqueta negra";
+    el("dot-p1").style.background = "#23262b";
+    el("name-p2").textContent = "Rival";
+    el("keys-p2").textContent = "Anfitrión · raqueta roja";
+    el("dot-p2").style.background = "#d63c2f";
+  } else if (mode === "online") {
+    el("name-p1").textContent = "Tú";
+    el("keys-p1").textContent = "Anfitrión · raqueta roja";
+    el("dot-p1").style.background = "#d63c2f";
+    el("name-p2").textContent = "Rival";
+    el("keys-p2").textContent = "Invitado · raqueta negra";
+    el("dot-p2").style.background = "#23262b";
+  } else if (mode === "local") {
+    el("name-p1").textContent = "Jugador 1"; el("keys-p1").textContent = "Teclas W / S";
+    el("name-p2").textContent = "Jugador 2"; el("keys-p2").textContent = "Teclas ↑ / ↓";
+    el("dot-p1").style.background = "#d63c2f"; el("dot-p2").style.background = "#23262b";
+  } else {
+    el("name-p1").textContent = "Tú"; el("keys-p1").textContent = "Raqueta roja";
+    el("name-p2").textContent = "La máquina"; el("keys-p2").textContent = "Raqueta negra";
+    el("dot-p1").style.background = "#d63c2f"; el("dot-p2").style.background = "#23262b";
+  }
+}
+var overlayState = "";
+function refreshOverlay(now) {
+  var big = "", sub = "";
+  if (stickyMsg) {
+    big = stickyMsg.big; sub = stickyMsg.sub;
+  } else if (!matchLive) {
+    big = "Elige un modo y empieza"; sub = "Gana quien llegue a 11 puntos con 2 de ventaja.";
+  } else if (view.phase === "over") {
+    if (mode === "online") {
+      var iWon = view.winner === localSide();
+      big = iWon ? "¡Ganaste el partido!" : "El rival gana esta vez";
+      sub = role === "host" ? "Pulsa «Revancha» para jugar otra vez." : "Esperando a que el anfitrión inicie la revancha…";
+    } else if (mode === "local") {
+      big = view.winner === 1 ? "¡Gana el Jugador 1!" : "¡Gana el Jugador 2!";
+      sub = "Pulsa «Revancha» para jugar otra vez.";
+    } else {
+      big = view.winner === 1 ? "¡Ganaste!" : "La máquina se lleva el partido";
+      sub = "Pulsa «Revancha» para intentarlo de nuevo.";
+    }
+  } else if (view.phase === "serve" && mode === "online" && role === "guest" && !snapshots.length) {
+    big = "Conectando la mesa…"; sub = "";
+  }
+  var key = big + "|" + sub;
+  if (key !== overlayState) {
+    overlayState = key;
+    if (big) showCourtMsg(big, sub); else hideCourtMsg();
+  }
+}
+function showCourtMsg(big, sub) {
+  el("court-msg-big").textContent = big;
+  el("court-msg-sub").textContent = sub || "";
+  el("court-msg").classList.remove("hidden");
+}
+function hideCourtMsg() { el("court-msg").classList.add("hidden"); }
+function setStatus(kind, text) {
+  var pill = el("status-pill");
+  pill.className = "pill" + (kind ? " " + kind : "");
+  el("status-text").textContent = text;
+}
+function updateMatchUI() {
+  el("btn-stop").classList.toggle("hidden", !matchLive);
+  var canRematch = matchLive && view.phase === "over" && (mode !== "online" || role === "host");
+  el("btn-rematch").classList.toggle("hidden", !canRematch);
+  updateLabels();
+  lastScoreShown = ""; // fuerza repintado del marcador
+  refreshScoreboard();
+}
+function stopMatch() {
+  matchLive = false;
+  stickyMsg = null;
+  eng = null;
+  view = freshView();
+  teardownPeer();
+  setStatus("", "Sin partida");
+  updateMatchUI();
+  overlayState = "";
+  showCourtMsg("Elige un modo y empieza", "Gana quien llegue a 11 puntos con 2 de ventaja.");
+}
+
+/* ---------- Cambio de modo / rol ---------- */
+document.querySelectorAll(".tab").forEach(function (tab) {
+  tab.addEventListener("click", function () {
+    ensureAudio();
+    document.querySelectorAll(".tab").forEach(function (t) { t.setAttribute("aria-selected", t === tab ? "true" : "false"); });
+    mode = tab.getAttribute("data-mode");
+    ["online", "local", "bot"].forEach(function (m) { el("panel-" + m).classList.toggle("hidden", m !== mode); });
+    stopMatch();
+    if (mode === "online") setRoleUI(role === "guest" ? "guest" : "host");
+    updateLabels();
+  });
+});
+function setRoleUI(r) {
+  role = r;
+  el("role-host").setAttribute("aria-pressed", r === "host" ? "true" : "false");
+  el("role-guest").setAttribute("aria-pressed", r === "guest" ? "true" : "false");
+  el("host-flow").classList.toggle("hidden", r !== "host");
+  el("guest-flow").classList.toggle("hidden", r !== "guest");
+  updateLabels();
+}
+el("role-host").addEventListener("click", function () { setRoleUI("host"); });
+el("role-guest").addEventListener("click", function () { setRoleUI("guest"); });
+
+/* ---------- Botones ---------- */
+el("btn-create").addEventListener("click", function () { ensureAudio(); hostCreate(this); });
+el("btn-guest-join").addEventListener("click", function () { ensureAudio(); guestJoin(this); });
+el("guest-code-input").addEventListener("input", function () {
+  var v = normalizeCode(this.value);
+  if (v !== this.value) this.value = v;
+});
+el("guest-code-input").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") { e.preventDefault(); el("btn-guest-join").click(); }
+});
+el("btn-start-local").addEventListener("click", function () {
+  ensureAudio(); mode = "local"; role = null;
+  resetMatch(); matchLive = true; setStatus("on", "Partido local en curso");
+  updateMatchUI(); hideCourtMsg();
+  document.getElementById("court-wrap").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+el("btn-start-bot").addEventListener("click", function () {
+  ensureAudio(); mode = "bot"; role = null;
+  resetMatch(); matchLive = true; setStatus("on", "Partido contra la máquina");
+  updateMatchUI(); hideCourtMsg();
+  document.getElementById("court-wrap").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+el("btn-rematch").addEventListener("click", function () {
+  ensureAudio();
+  if (mode === "online" && role === "host") sendStart();
+  else { resetMatch(); updateMatchUI(); hideCourtMsg(); }
+});
+el("btn-stop").addEventListener("click", function () {
+  stopMatch();
+  // Limpia los flujos en línea para empezar de cero
+  el("guest-code-input").value = "";
+  el("host-code").textContent = "";
+  el("host-code-box").classList.add("hidden");
+  el("host-err").textContent = "";
+  el("guest-err").textContent = "";
+});
+el("btn-sound").addEventListener("click", function () {
+  soundOn = !soundOn;
+  this.textContent = soundOn ? "Sonido: sí" : "Sonido: no";
+  this.setAttribute("aria-pressed", soundOn ? "true" : "false");
+  ensureAudio();
+});
+
+el("btn-copy-host").addEventListener("click", function () {
+  if (!hostCode) return;
+  function done() { el("host-copied").textContent = "Copiado. Pégalo en WhatsApp."; setTimeout(function () { el("host-copied").textContent = ""; }, 3500); }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(hostCode).then(done, function () { fallbackCopy(hostCode, done); });
+  } else { fallbackCopy(hostCode, done); }
+});
+function fallbackCopy(text, done) {
+  var ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); } catch (e) {}
+  document.body.removeChild(ta);
+}
+el("btn-paste-code").addEventListener("click", function () {
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then(function (t) { el("guest-code-input").value = normalizeCode(t); },
+      function () { el("guest-err").textContent = "El navegador no dio permiso para leer el portapapeles: escribe el código a mano."; });
+  } else {
+    el("guest-err").textContent = "Escribe el código a mano: son solo 4 caracteres.";
+  }
+});
+
+/* Si el invitado escribe o pega el código con minúsculas o espacios,
+   el campo lo deja limpio automáticamente (2 letras + 2 números). */
+
+window.addEventListener("resize", layout);
+setRoleUI("host");
+updateLabels();
+requestAnimationFrame(function (t) { lastT = t; requestAnimationFrame(loop); });
+</script>
+  </body>
+</html>
