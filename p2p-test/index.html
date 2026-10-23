@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>P2P test</title></head>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>P2P test 2</title></head>
 <body>
 <div id="log" style="font-family:monospace;white-space:pre-wrap;padding:12px;"></div>
 <script src="https://cdn.jsdelivr.net/npm/peerjs@1/dist/peerjs.min.js"></script>
@@ -7,35 +7,44 @@
 var logEl = document.getElementById('log');
 function log(m){ logEl.textContent += new Date().toISOString().substr(14,9) + ' ' + m + '\n'; }
 log('PeerJS loaded: ' + (typeof Peer));
-try { log('PeerJS version hint: ' + (Peer.prototype && Peer.prototype.constructor ? 'ok' : '?')); } catch(e){}
 var q = new URLSearchParams(location.search);
 var role = q.get('role'), code = (q.get('code') || 'dbg99').toLowerCase();
+function watchPC(tag, pc, c) {
+  var last = '';
+  setInterval(function(){
+    try {
+      var s = 'iceGathering=' + pc.iceGatheringState + ' iceConn=' + pc.iceConnectionState +
+              ' conn=' + pc.connectionState + ' signaling=' + pc.signalingState +
+              ' dcOpen=' + (c && c.open);
+      if (s !== last) { last = s; log(tag + ' PC: ' + s); }
+    } catch(e){ log(tag + ' PC read err'); }
+  }, 2000);
+}
 if (role === 'host') {
   var p = new Peer('dbgtest-' + code);
   p.on('open', function(id){ log('HOST open: ' + id); });
   p.on('error', function(e){ log('HOST error: ' + e.type); });
-  p.on('disconnected', function(){ log('HOST disconnected'); });
   p.on('connection', function(c){
     log('HOST connection! label=' + c.label);
-    c.on('open', function(){ log('HOST dc open -> sending hello'); try{ c.send('hello-from-host'); }catch(e){ log('HOST send failed'); } });
+    watchPC('HOST', c.peerConnection, c);
+    c.on('open', function(){ log('HOST dc open'); });
     c.on('data', function(d){ log('HOST data: ' + d); });
     c.on('error', function(){ log('HOST dc error'); });
-    c.on('iceStateChanged', function(s){ log('HOST ice: ' + s); });
+    c.on('iceStateChanged', function(s){ log('HOST iceStateChanged: ' + s); });
   });
 } else {
   var p2 = new Peer();
   p2.on('open', function(id){
-    log('GUEST open: ' + id + ' -> connecting to dbgtest-' + code);
+    log('GUEST open, connecting to dbgtest-' + code);
     var c = p2.connect('dbgtest-' + code, { reliable: true });
-    c.on('open', function(){ log('GUEST dc open! -> sending hello'); try{ c.send('hello-from-guest'); }catch(e){} });
+    watchPC('GUEST', c.peerConnection, c);
+    c.on('open', function(){ log('GUEST dc open!'); });
     c.on('data', function(d){ log('GUEST data: ' + d); });
     c.on('error', function(){ log('GUEST dc error'); });
-    c.on('iceStateChanged', function(s){ log('GUEST ice: ' + s); });
-    c.on('close', function(){ log('GUEST dc close'); });
+    c.on('iceStateChanged', function(s){ log('GUEST iceStateChanged: ' + s); });
   });
   p2.on('error', function(e){ log('GUEST error: ' + e.type); });
-  p2.on('disconnected', function(){ log('GUEST disconnected'); });
 }
-setTimeout(function(){ log('--- 40s done ---'); }, 40000);
+setTimeout(function(){ log('--- 50s done ---'); }, 50000);
 </script>
 </body></html>
