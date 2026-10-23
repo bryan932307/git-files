@@ -545,19 +545,78 @@ var PEER_PREFIX = "tenisdemesa-p2p-";
 /* Servidores ICE explícitos. Sin TURN, dos jugadores detrás de routers con
    NAT estricta (muy común en Wi-Fi domésticos y datos móviles) se presentaban
    bien pero la conexión directa nunca se abría y el partido no empezaba.
-   El TURN gratuito de PeerJS retransmite en esos casos. */
-var PEER_OPTS = {
-  debug: 0,
-  config: {
-    iceServers: [
-      { urls: ["stun:stun.l.google.com:19302", "stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"] },
-      { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
-      { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
-      { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" }
-    ],
-    iceCandidatePoolSize: 4
+   Se usa el TURN gratuito de Metered (Open Relay) con credenciales de tiempo
+   limitado generadas en el momento (método "REST" con secreto estático
+   publicado en su documentación): no hace falta cuenta ni API key. */
+var TURN_STATIC_SECRET = "openrelayprojectsecret";
+/* SHA-1 en JS puro (sincrónico, sin crypto.subtle). Verificado contra
+   vectores oficiales: 1 bloque, multi-bloque y bordes de padding. */
+function sha1Bytes(msgBytes) {
+  var h0=0x67452301,h1=0xEFCDAB89,h2=0x98BADCFE,h3=0x10325476,h4=0xC3D2E1F0;
+  var bitLen = msgBytes.length * 8;
+  var padded = Array.prototype.slice.call(msgBytes);
+  padded.push(0x80);
+  while (padded.length % 64 !== 56) padded.push(0);
+  var hi = Math.floor(bitLen / 0x100000000), lo = bitLen >>> 0;
+  padded.push((hi>>>24)&255,(hi>>>16)&255,(hi>>>8)&255,hi&255,
+              (lo>>>24)&255,(lo>>>16)&255,(lo>>>8)&255,lo&255);
+  var w = new Array(80);
+  function rol(n,b){ return ((n<<b)|(n>>>(32-b)))|0; }
+  for (var i=0;i<padded.length;i+=64){
+    for (var t=0;t<16;t++) w[t]=((padded[i+t*4]<<24)|(padded[i+t*4+1]<<16)|(padded[i+t*4+2]<<8)|padded[i+t*4+3])|0;
+    for (t=16;t<80;t++) w[t]=rol(w[t-3]^w[t-8]^w[t-14]^w[t-16],1);
+    var a=h0,b=h1,c=h2,d=h3,e=h4,f,k;
+    for (t=0;t<80;t++){
+      if(t<20){f=(b&c)|((~b)&d);k=0x5A827999;}
+      else if(t<40){f=b^c^d;k=0x6ED9EBA1;}
+      else if(t<60){f=(b&c)|(b&d)|(c&d);k=0x8F1BBCDC;}
+      else {f=b^c^d;k=0xCA62C1D6;}
+      var tmp=(rol(a,5)+f+e+k+w[t])|0;
+      e=d;d=c;c=rol(b,30);b=a;a=tmp;
+    }
+    h0=(h0+a)|0;h1=(h1+b)|0;h2=(h2+c)|0;h3=(h3+d)|0;h4=(h4+e)|0;
   }
-};
+  var out=[];
+  [h0,h1,h2,h3,h4].forEach(function(h){out.push((h>>>24)&255,(h>>>16)&255,(h>>>8)&255,h&255);});
+  return out;
+}
+function hmacSha1Bytes(keyBytes, msgBytes){
+  if(keyBytes.length>64) keyBytes=sha1Bytes(keyBytes);
+  var ipad=[],opad=[];
+  for(var i=0;i<64;i++){var kb=i<keyBytes.length?keyBytes[i]:0;ipad.push(kb^0x36);opad.push(kb^0x5c);}
+  return sha1Bytes(opad.concat(sha1Bytes(ipad.concat(msgBytes))));
+}
+function strBytes(s){var a=[];for(var i=0;i<s.length;i++)a.push(s.charCodeAt(i)&255);return a;}
+function b64Bytes(bytes){
+  var chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  var out="",i;
+  for(i=0;i+2<bytes.length;i+=3)
+    out+=chars[bytes[i]>>2]+chars[((bytes[i]&3)<<4)|(bytes[i+1]>>4)]+chars[((bytes[i+1]&15)<<2)|(bytes[i+2]>>6)]+chars[bytes[i+2]&63];
+  var rem=bytes.length-i;
+  if(rem===1) out+=chars[bytes[i]>>2]+chars[(bytes[i]&3)<<4]+"==";
+  else if(rem===2) out+=chars[bytes[i]>>2]+chars[((bytes[i]&3)<<4)|(bytes[i+1]>>4)]+chars[((bytes[i+1]&15)<<2)]+"=";
+  return out;
+}
+/* Genera usuario/clave TURN válidos por 6 horas: usuario "<expiración>:<nombre>",
+   clave = base64(HMAC-SHA1(secreto, usuario). */
+function makeTurnCreds(){
+  try{
+    var expiry = Math.floor(Date.now()/1000) + 6*3600;
+    var username = expiry + ":tenisdemesa";
+    var mac = hmacSha1Bytes(strBytes(TURN_STATIC_SECRET), strBytes(username));
+    return { username: username, credential: b64Bytes(mac) };
+  }catch(e){ return null; }
+}
+function getPeerOpts(){
+  var ice=[{ urls:["stun:stun.l.google.com:19302","stun:stun1.l.google.com:19302","stun:stun2.l.google.com:19302"] }];
+  var creds=makeTurnCreds();
+  if(creds){
+    ice.push({ urls:"turn:staticauth.openrelay.metered.ca:80", username:creds.username, credential:creds.credential });
+    ice.push({ urls:"turn:staticauth.openrelay.metered.ca:443", username:creds.username, credential:creds.credential });
+    ice.push({ urls:"turn:staticauth.openrelay.metered.ca:443?transport=tcp", username:creds.username, credential:creds.credential });
+  }
+  return { debug:0, config:{ iceServers:ice, iceCandidatePoolSize:4 } };
+}
 var peer = null, dcFast = null, dcCtl = null;
 var hostCode = "";
 var guestTargetY = W/2;                 // objetivo de la raqueta del invitado (en el anfitrión)
@@ -709,7 +768,7 @@ function hostCreate(btn) {
 }
 function hostTryCreate(btn, attempt, netTries) {
   hostCode = genCode();
-  var p = new Peer(PEER_PREFIX + hostCode.toLowerCase(), PEER_OPTS);
+  var p = new Peer(PEER_PREFIX + hostCode.toLowerCase(), getPeerOpts());
   peer = p;
   var opened = false;
   var openTimer = setTimeout(function () {
@@ -781,7 +840,7 @@ function guestJoin(btn) {
 }
 function guestTryJoin(btn, code, netTries) {
   var err = document.getElementById("guest-err");
-  var p = new Peer(undefined, PEER_OPTS);
+  var p = new Peer(undefined, getPeerOpts());
   peer = p;
   var failed = false, opened = false;
   var openTimer = setTimeout(function () {
